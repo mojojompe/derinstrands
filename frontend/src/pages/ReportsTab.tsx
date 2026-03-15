@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  LineChart, Line, PieChart, Pie, Cell 
+  PieChart, Pie, Cell 
 } from 'recharts';
 import { utils, writeFile } from 'xlsx';
-import { MdFileDownload, MdAnalytics, MdPieChart, MdShowChart } from 'react-icons/md';
+import { MdFileDownload, MdAnalytics, MdPieChart } from 'react-icons/md';
 import Header from '../components/Header';
 import { ChartSkeleton } from '../components/Skeletons';
 import { getSales } from '../services/api';
@@ -149,7 +149,7 @@ const ReportsTab: React.FC = () => {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {statusDistribution.map((entry, index) => (
+                        {statusDistribution.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -160,7 +160,7 @@ const ReportsTab: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-2 gap-4 w-full mt-4">
-               {statusDistribution.map((item, i) => (
+               {statusDistribution.map((item) => (
                  <div key={item.name} className="bg-gray-50 p-4 rounded-2xl text-center border border-gray-100">
                     <p className="text-[10px] font-black text-gray-400 uppercase">{item.name}</p>
                     <p className="text-xl font-black text-brand-black">{item.value}</p>

@@ -76,11 +76,9 @@ const Dashboard: React.FC = () => {
     try {
       let savedSale: ISale;
       if (activeSaleToEdit) {
-        const response = await updateSale(activeSaleToEdit._id, payload);
-        savedSale = response.data;
+        savedSale = await updateSale(activeSaleToEdit._id, payload);
       } else {
-        const response = await createSale(payload);
-        savedSale = response.data;
+        savedSale = await createSale(payload);
       }
       
       await fetchSales();
