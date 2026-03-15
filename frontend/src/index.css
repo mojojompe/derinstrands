@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-pink: #FF1493;
+  --color-brand-pink-light: #FF69B4;
+  --color-brand-black: #1A1A1A;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-brand-black font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Simplified Glassmorphism for Light Theme */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-gray-100 shadow-sm rounded-3xl;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-gray-100 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:border-brand-pink/20;
+  }
+
+  /* New Modern Inputs (Replacing Claymorphism) */
+  .modern-input {
+    @apply w-full px-4 py-3 bg-gray-50 border-2 border-transparent rounded-xl transition-all duration-200 outline-none
+           hover:bg-gray-100 focus:bg-white focus:border-brand-pink/50 focus:ring-4 focus:ring-brand-pink/10 text-brand-black;
+  }
+
+  .modern-button-primary {
+    @apply px-6 py-3 bg-brand-black text-white font-bold rounded-xl transition-all duration-200 
+           hover:bg-brand-pink hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-black/10;
+  }
+
+  .modern-button-secondary {
+    @apply px-6 py-3 bg-white text-brand-black font-bold border-2 border-gray-100 rounded-xl transition-all duration-200 
+           hover:border-brand-pink/30 hover:bg-gray-50 active:scale-[0.98];
+  }
+
+  /* Skeleton Loader Animation */
+  .skeleton {
+    @apply bg-slate-200 animate-pulse rounded;
+  }
+  
+  .skeleton-text {
+    @apply h-4 w-full bg-slate-200 animate-pulse rounded;
+  }
+
+  .skeleton-circle {
+    @apply h-12 w-12 rounded-full bg-slate-200 animate-pulse;
+  }
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
