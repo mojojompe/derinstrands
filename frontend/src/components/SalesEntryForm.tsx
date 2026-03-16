@@ -81,8 +81,8 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-brand-black/20 backdrop-blur-md" onClick={onClose} />
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-brand-black/40 backdrop-blur-md" onClick={onClose} />
       
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-[2.5rem] shadow-2xl animate-fade-in p-8 border border-gray-100">
         <div className="flex justify-between items-center mb-8">

@@ -12,8 +12,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-brand-black/20 backdrop-blur-md" onClick={onClose} />
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-brand-black/40 backdrop-blur-md" onClick={onClose} />
       
       <div className="relative w-full max-w-sm bg-white rounded-[2rem] shadow-2xl animate-fade-in p-8 text-center border border-gray-100">
         <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl mx-auto flex items-center justify-center mb-6 border border-red-100 italic font-black text-4xl">

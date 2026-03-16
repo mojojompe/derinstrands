@@ -14,7 +14,12 @@ const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale }, ref) =
     >
       {/* Background Flier */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <img src="/Flier.jpg" alt="Background" className="w-full h-full object-cover" />
+        <img 
+          src="/Flier.jpg" 
+          alt="Background" 
+          className="w-full h-full object-cover" 
+          crossOrigin="anonymous"
+        />
       </div>
 
       <div className="absolute top-4 right-4 opacity-5 pointer-events-none">
@@ -24,7 +29,7 @@ const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale }, ref) =
       <div className="flex justify-between items-start mb-8 border-b-2 border-brand-pink pb-6 relative z-10">
         <div className="flex items-center space-x-3">
            <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-white">
-              <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+              <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
             </div>
             <div>
               <h1 className="text-3xl font-black text-brand-black tracking-widest">DERIN STRANDS</h1>
