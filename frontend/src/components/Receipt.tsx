@@ -9,8 +9,9 @@ const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale }, ref) =
   return (
     <div 
       ref={ref} 
-      className="p-10 bg-white text-black font-sans mx-auto w-[600px] h-[800px] relative overflow-hidden border border-gray-100"
-      style={{ boxSizing: 'border-box', minWidth: '600px', minHeight: '800px' }}
+      id="receipt-content-root"
+      className="p-10 bg-white text-black font-sans mx-auto w-[600px] h-[800px] relative overflow-hidden border border-gray-100 shadow-none"
+      style={{ boxSizing: 'border-box', minWidth: '600px', minHeight: '800px', backgroundColor: '#ffffff' }}
     >
       {/* Background Flier */}
       <div className="absolute inset-0 opacity-10 pointer-events-none">

@@ -55,7 +55,7 @@ const ReportsTab: React.FC = () => {
     const exportData = sales.map(sale => ({
       'Date': new Date(sale.date).toLocaleDateString(),
       'Buyer Name': sale.buyerName,
-      'Number of Items': sale.items.length,
+      'Items': sale.items.map(i => `${i.name} (x${i.quantity}) @ ₦${i.price.toLocaleString()}`).join('; '),
       'Total Amount': sale.totalPrice,
       'Payment Status': sale.paymentStatus,
       'Delivery Status': sale.deliveryStatus

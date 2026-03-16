@@ -26,7 +26,7 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ sales }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
       {stats.map((item) => (
         <div
           key={item.name}
