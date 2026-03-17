@@ -6,7 +6,8 @@ export const getSales = async (req: Request, res: Response): Promise<void> => {
     const sales = await Sale.find().sort({ createdAt: -1 });
     res.json(sales);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching sales' });
+    console.error('Error fetching sales:', error);
+    res.status(500).json({ message: 'Error fetching sales', error: String(error) });
   }
 };
 
@@ -16,7 +17,8 @@ export const createSale = async (req: Request, res: Response): Promise<void> => 
     const savedSale = await sale.save();
     res.status(201).json(savedSale);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating sale', error });
+    console.error('Error creating sale:', error);
+    res.status(400).json({ message: 'Error creating sale', details: error });
   }
 };
 

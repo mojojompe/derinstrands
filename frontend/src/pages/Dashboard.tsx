@@ -43,8 +43,8 @@ const Dashboard: React.FC = () => {
     try {
       const data = await getSales();
       setAllSales(data);
-    } catch (error) {
-      console.error("Error fetching sales:", error);
+    } catch (error: any) {
+      console.error("Error fetching sales:", error.response?.data || error.message);
     } finally {
       setIsLoading(false);
     }
@@ -91,8 +91,8 @@ const Dashboard: React.FC = () => {
       }
 
       setActiveSaleToEdit(undefined);
-    } catch (error) {
-      console.error("Error saving sale:", error);
+    } catch (error: any) {
+      console.error("Error saving sale:", error.response?.data || error.message);
     }
   };
 

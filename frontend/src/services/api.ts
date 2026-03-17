@@ -8,12 +8,12 @@ const api = axios.create({
 });
 
 export const getSales = async (): Promise<ISale[]> => {
-  const response = await api.get('/');
+  const response = await api.get('');
   return response.data;
 };
 
 export const createSale = async (data: ISalePayload): Promise<ISale> => {
-  const response = await api.post('/', data);
+  const response = await api.post('', data);
   return response.data;
 };
 
