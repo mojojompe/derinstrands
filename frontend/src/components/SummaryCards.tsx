@@ -26,18 +26,18 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({ sales }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 px-1">
       {stats.map((item) => (
         <div
           key={item.name}
-          className="bg-white border border-gray-100 p-6 rounded-3xl flex items-center space-x-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-brand-pink/20 group"
+          className="bg-white border border-gray-100 p-3 sm:p-6 rounded-[2rem] flex items-center space-x-2 sm:space-x-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-brand-pink/20 group"
         >
-          <div className={`p-4 rounded-2xl ${item.bg} flex items-center justify-center transition-transform group-hover:scale-110`}>
-            <item.icon className={`h-8 w-8 ${item.color}`} />
+          <div className={`p-2 sm:p-4 rounded-xl sm:rounded-2xl ${item.bg} flex items-center justify-center transition-transform group-hover:scale-110 shrink-0`}>
+            <item.icon className={`h-4 w-4 sm:h-8 sm:w-8 ${item.color}`} />
           </div>
-          <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{item.name}</p>
-            <p className="mt-1 text-2xl font-black text-brand-black">{item.value}</p>
+          <div className="min-w-0">
+            <p className="text-[9px] sm:text-xs font-bold text-gray-400 uppercase tracking-tighter sm:tracking-widest truncate">{item.name}</p>
+            <p className="mt-0.5 text-sm sm:text-2xl font-black text-brand-black truncate">{item.value}</p>
           </div>
         </div>
       ))}
