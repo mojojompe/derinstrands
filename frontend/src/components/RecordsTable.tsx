@@ -7,12 +7,13 @@ interface RecordsTableProps {
   onEdit: (sale: ISale) => void;
   onDelete: (id: string, buyerName: string) => void;
   onShowReceipt: (sale: ISale) => void;
+  onCustomerClick: (name: string) => void;
 }
 
-const RecordsTable: React.FC<RecordsTableProps> = ({ sales, onEdit, onDelete, onShowReceipt }) => {
+const RecordsTable: React.FC<RecordsTableProps> = ({ sales, onEdit, onDelete, onShowReceipt, onCustomerClick }) => {
 
   const handleWhatsAppShare = (sale: ISale) => {
-    const message = `Hello ${sale.buyerName}, thank you for your order at Derin Strands!\n\nOrder ID: #${sale._id.slice(-6).toUpperCase()}\nItems: ${sale.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nWe appreciate your business!`;
+    const message = `Hello ${sale.buyerName}, thank you for your order at DerinStrands!\n\nOrder ID: #${sale._id.slice(-6).toUpperCase()}\nItems: ${sale.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nWe appreciate your business!`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -50,8 +51,13 @@ const RecordsTable: React.FC<RecordsTableProps> = ({ sales, onEdit, onDelete, on
                   {new Date(sale.date).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm font-bold text-brand-black">{sale.buyerName}</div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase group-hover:text-brand-pink transition-colors">
+                  <button 
+                    onClick={() => onCustomerClick(sale.buyerName)}
+                    className="text-sm font-bold text-brand-black hover:text-brand-pink transition-colors text-left"
+                  >
+                    {sale.buyerName}
+                  </button>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase group-hover:text-brand-pink/60 transition-colors">
                     {sale.items.map(i => i.name).join(', ')}
                   </div>
                 </td>

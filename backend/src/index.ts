@@ -20,7 +20,7 @@ app.use('/api/sales', salesRoutes);
 
 // Health check
 app.get('/', (req, res) => {
-  res.send('Derin Strands API is running');
+  res.send('DerinStrands API is running');
 });
 
 mongoose.connect(MONGO_URI)

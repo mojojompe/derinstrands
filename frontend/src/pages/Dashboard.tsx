@@ -6,9 +6,11 @@ import RecordsTable from '../components/RecordsTable';
 import SalesEntryForm from '../components/SalesEntryForm';
 import ConfirmModal from '../components/ConfirmModal';
 import ReceiptModal from '../components/ReceiptModal';
+import CustomerSidebar from '../components/CustomerSidebar';
 import { SummarySkeleton, TableSkeleton } from '../components/Skeletons';
 import { getSales, createSale, updateSale, deleteSale } from '../services/api';
 import type { ISale, ISalePayload } from '../types';
+import { toast } from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
   const [allSales, setAllSales] = useState<ISale[]>([]);
@@ -30,6 +32,9 @@ const Dashboard: React.FC = () => {
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [activeReceiptSale, setActiveReceiptSale] = useState<ISale | null>(null);
 
+  const [isCustomerSidebarOpen, setIsCustomerSidebarOpen] = useState(false);
+  const [activeCustomerName, setActiveCustomerName] = useState('');
+
   useEffect(() => {
     fetchSales();
   }, []);
@@ -45,6 +50,7 @@ const Dashboard: React.FC = () => {
       setAllSales(data);
     } catch (error: any) {
       console.error("Error fetching sales:", error.response?.data || error.message);
+      toast.error("Failed to load sales data");
     } finally {
       setIsLoading(false);
     }
@@ -73,12 +79,15 @@ const Dashboard: React.FC = () => {
   };
 
   const handleCreateOrUpdate = async (payload: ISalePayload) => {
+    const loadingToast = toast.loading(activeSaleToEdit ? "Updating order..." : "Recording new sale...");
     try {
       let savedSale: ISale;
       if (activeSaleToEdit) {
         savedSale = await updateSale(activeSaleToEdit._id, payload);
+        toast.success("Order updated successfully!", { id: loadingToast });
       } else {
         savedSale = await createSale(payload);
+        toast.success("New sale recorded!", { id: loadingToast });
       }
       
       await fetchSales();
@@ -93,6 +102,7 @@ const Dashboard: React.FC = () => {
       setActiveSaleToEdit(undefined);
     } catch (error: any) {
       console.error("Error saving sale:", error.response?.data || error.message);
+      toast.error("Failed to save entry", { id: loadingToast });
     }
   };
 
@@ -103,12 +113,15 @@ const Dashboard: React.FC = () => {
 
   const confirmDelete = async () => {
     if (saleToDelete) {
+      const loadingToast = toast.loading("Deleting record...");
       try {
         await deleteSale(saleToDelete.id);
+        toast.success("Record deleted", { id: loadingToast });
         setIsConfirmOpen(false);
         await fetchSales();
-      } catch (error) {
-        console.error("Error deleting sale:", error);
+      } catch (error: any) {
+        console.error("Error deleting sale:", error.response?.data || error.message);
+        toast.error("Delete failed", { id: loadingToast });
       }
     }
   };
@@ -123,8 +136,13 @@ const Dashboard: React.FC = () => {
     setIsReceiptModalOpen(true);
   };
 
+  const handleCustomerClick = (name: string) => {
+    setActiveCustomerName(name);
+    setIsCustomerSidebarOpen(true);
+  };
+
   return (
-    <div className="min-h-screen pb-20 animate-fade-in">
+    <div className="min-h-screen pb-20 animate-fade-in text-brand-black">
       <Header onNewEntry={openNewEntry} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
@@ -154,6 +172,7 @@ const Dashboard: React.FC = () => {
               }}
               onDelete={handleDeleteClick}
               onShowReceipt={handleShowReceipt}
+              onCustomerClick={handleCustomerClick}
             />
           )}
         </div>
@@ -178,6 +197,13 @@ const Dashboard: React.FC = () => {
         isOpen={isReceiptModalOpen}
         onClose={() => setIsReceiptModalOpen(false)}
         sale={activeReceiptSale}
+      />
+
+      <CustomerSidebar 
+        isOpen={isCustomerSidebarOpen}
+        onClose={() => setIsCustomerSidebarOpen(false)}
+        buyerName={activeCustomerName}
+        sales={allSales}
       />
     </div>
   );

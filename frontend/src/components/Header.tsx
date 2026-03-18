@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({ onNewEntry }) => {
           
           <div className="flex-shrink-0 flex items-center space-x-3">
             <div className="w-12 h-12 rounded-2xl overflow-hidden border border-gray-100 shadow-sm flex items-center justify-center bg-white">
-              <img src="/logo.jpg" alt="Derin Strands Logo" className="w-full h-full object-cover" />
+              <img src="/logo.jpg" alt="DerinStrands Logo" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-black text-brand-black tracking-tighter hidden sm:block">
               DERIN<span className="text-brand-pink"> STRANDS</span>

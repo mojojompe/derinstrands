@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ISale } from '../types';
+import { fontStyle } from 'html2canvas/dist/types/css/property-descriptors/font-style';
 
 interface ReceiptProps {
   sale: ISale;
@@ -50,7 +51,7 @@ const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale }, ref) =
               <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-widest" style={{ color: colors.brandBlack }}>DERIN STRANDS</h1>
+              <h1 className="text-3xl font-black tracking-widest" style={{ color: colors.brandBlack, fontStyle: 'italic' ,}}>DerinStrands</h1>
               <p className="text-sm italic" style={{ color: colors.grayText }}>...Good Hair, Good Mood...</p>
             </div>
         </div>

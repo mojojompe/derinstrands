@@ -93,7 +93,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, sale }) =>
   };
 
   const handleShare = async () => {
-    const shareText = `Hello ${sale.buyerName}, here is your receipt from Derin Strands.\n\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nThank you for choosing us!`;
+    const shareText = `Hello ${sale.buyerName}, here is your receipt from DerinStrands.\n\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nThank you for choosing us!`;
     
     setIsGenerating(true);
     const canvas = await performCapture();
@@ -119,7 +119,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, sale }) =>
           try {
             await navigator.share({
               files: [file],
-              title: 'Derin Strands Receipt',
+              title: 'DerinStrands Receipt',
               text: shareText
             });
           } catch (e) {

@@ -75,7 +75,7 @@ const ReportsTab: React.FC = () => {
         <div className="flex justify-between items-end">
           <div>
              <h1 className="text-4xl font-black text-brand-black tracking-tighter italic">BUSINESS <span className="text-brand-pink">INTEL</span></h1>
-             <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-2">Data driven insights for Derin Strands</p>
+             <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-2">Data driven insights for DerinStrands</p>
           </div>
           <button 
             onClick={handleExportExcel}
