@@ -1,7 +1,5 @@
 import React from 'react';
 import type { ISale } from '../types';
-import { fontStyle } from 'html2canvas/dist/types/css/property-descriptors/font-style';
-
 interface ReceiptProps {
   sale: ISale;
 }
