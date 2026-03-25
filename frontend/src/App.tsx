@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import ReportsTab from './pages/ReportsTab';
+import InventoryTab from './pages/InventoryTab';
 import { Toaster } from 'react-hot-toast';
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
 
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/inventory" element={<InventoryTab />} />
           <Route path="/reports" element={<ReportsTab />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>

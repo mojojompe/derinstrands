@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MdDashboard, MdBarChart, MdAdd } from 'react-icons/md';
+import { MdDashboard, MdBarChart, MdAdd, MdInventory2 } from 'react-icons/md';
 
 interface HeaderProps {
   onNewEntry?: () => void;
@@ -8,7 +8,13 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNewEntry }) => {
   const location = useLocation();
-  const isDashboard = location.pathname === '/dashboard';
+  const path = location.pathname;
+
+  const navLinks = [
+    { to: '/dashboard', label: 'Dashboard', icon: MdDashboard },
+    { to: '/inventory', label: 'Inventory', icon: MdInventory2 },
+    { to: '/reports', label: 'Reports', icon: MdBarChart },
+  ];
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-lg border-b border-gray-100">
@@ -25,39 +31,32 @@ const Header: React.FC<HeaderProps> = ({ onNewEntry }) => {
           </div>
           
           <nav className="flex items-center bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-            <Link 
-              to="/dashboard" 
-              className={`flex items-center space-x-2 px-6 py-2 rounded-xl transition-all duration-300 ${
-                isDashboard 
-                ? 'bg-white shadow-sm text-brand-black font-bold' 
-                : 'text-gray-500 hover:text-brand-black'
-              }`}
-            >
-              <MdDashboard className={`text-xl ${isDashboard ? 'text-brand-pink' : ''}`} />
-              <span className="text-sm hidden sm:block">Dashboard</span>
-            </Link>
-            <Link 
-              to="/reports" 
-              className={`flex items-center space-x-2 px-6 py-2 rounded-xl transition-all duration-300 ${
-                !isDashboard 
-                ? 'bg-white shadow-sm text-brand-black font-bold' 
-                : 'text-gray-500 hover:text-brand-black'
-              }`}
-            >
-              <MdBarChart className={`text-xl ${!isDashboard ? 'text-brand-pink' : ''}`} />
-              <span className="text-sm hidden sm:block">Reports</span>
-            </Link>
+            {navLinks.map(link => {
+              const isActive = path === link.to;
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`flex items-center space-x-2 px-4 sm:px-5 py-2 rounded-xl transition-all duration-300 ${
+                    isActive
+                      ? 'bg-white shadow-sm text-brand-black font-bold'
+                      : 'text-gray-500 hover:text-brand-black'
+                  }`}
+                >
+                  <link.icon className={`text-xl ${isActive ? 'text-brand-pink' : ''}`} />
+                  <span className="text-sm hidden sm:block">{link.label}</span>
+                </Link>
+              );
+            })}
           </nav>
           
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={onNewEntry}
-              className="modern-button-primary flex items-center space-x-2"
-            >
-              <MdAdd className="text-xl" />
-              <span className="hidden sm:inline">New Entry</span>
-              <span className="sm:hidden"></span>
-            </button>
+            {onNewEntry && (
+              <button onClick={onNewEntry} className="modern-button-primary flex items-center space-x-2">
+                <MdAdd className="text-xl" />
+                <span className="hidden sm:inline">New Entry</span>
+              </button>
+            )}
           </div>
 
         </div>

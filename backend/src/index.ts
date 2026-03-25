@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import salesRoutes from './routes/salesRoutes';
+import productRoutes from './routes/productRoutes';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/sales', salesRoutes);
+app.use('/api/products', productRoutes);
 
 // Health check
 app.get('/', (req, res) => {
