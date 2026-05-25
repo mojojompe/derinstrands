@@ -31,6 +31,7 @@ export interface IProduct {
   name: string;
   price: number;
   quantity: number;
+  category?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,4 +40,5 @@ export interface IProductPayload {
   name: string;
   price: number;
   quantity: number;
+  category?: string;
 }

@@ -1,111 +1,164 @@
 import React from 'react';
 import type { ISale } from '../types';
+
 interface ReceiptProps {
   sale: ISale;
 }
 
 const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale }, ref) => {
-  // Safe hex colors for capture compatibility
+  const isPaid = sale.paymentStatus === 'paid';
+  const tagline = "...Good Hair, Good Mood...";
+
   const colors = {
     brandPink: '#FF1493',
-    brandBlack: '#1A1A1A',
-    grayText: '#6B7280', // approx gray-500
-    grayLightText: '#9CA3AF', // approx gray-400
-    grayBg: '#F3F4F6', // approx gray-100
-    grayBorder: '#E5E7EB', // approx gray-200
-    white: '#FFFFFF'
+    ink: '#09090B',
+    slate: '#71717A',
+    surface: '#FFFFFF',
+    background: '#FAFAFA',
+    border: '#E4E4E7',
   };
 
   return (
-    <div 
-      ref={ref} 
-      className="p-10 font-sans mx-auto w-[600px] h-[800px] relative overflow-hidden"
-      style={{ 
-        boxSizing: 'border-box', 
-        minWidth: '600px', 
-        minHeight: '800px', 
-        backgroundColor: colors.white,
-        color: colors.brandBlack,
-        border: `1px solid ${colors.grayBorder}`
+    <div
+      ref={ref}
+      style={{
+        width: '100%',
+        maxWidth: '420px',
+        margin: '0 auto',
+        backgroundColor: colors.surface,
+        color: colors.ink,
+        fontFamily: "'DM Sans', 'Inter', sans-serif",
+        padding: '0',
+        position: 'relative',
+        border: `1px solid ${colors.border}`,
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)',
+        overflow: 'hidden'
       }}
     >
-      {/* Background Flier */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <img 
-          src="/Flier.jpg" 
-          alt="Background" 
-          className="w-full h-full object-cover" 
-          crossOrigin="anonymous"
-        />
-      </div>
+      {/* Top Brand Accent Line */}
+      <div style={{ height: '8px', backgroundColor: colors.brandPink, width: '100%' }} />
 
-      <div className="absolute top-4 right-4 opacity-5 pointer-events-none">
-        <h1 className="text-8xl font-black italic" style={{ color: colors.brandBlack }}>PAID</h1>
-      </div>
-
-      <div className="flex justify-between items-start mb-8 pb-6 relative z-10" style={{ borderBottom: `2px solid ${colors.brandPink}` }}>
-        <div className="flex items-center space-x-3">
-           <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm flex items-center justify-center" style={{ backgroundColor: colors.white }}>
-              <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" crossOrigin="anonymous" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-widest" style={{ color: colors.brandBlack, fontStyle: 'italic' ,}}>DerinStrands</h1>
-              <p className="text-sm italic" style={{ color: colors.grayText }}>...Good Hair, Good Mood...</p>
-            </div>
+      {/* Header Section */}
+      <div style={{ padding: '40px 32px 32px', textAlign: 'center', backgroundColor: colors.background }}>
+        <div style={{ 
+          width: '64px', height: '64px', margin: '0 auto 20px', 
+          borderRadius: '50%', overflow: 'hidden', border: `2px solid ${colors.brandPink}`,
+          boxShadow: `0 0 20px rgba(255,20,147,0.15)`
+        }}>
+          <img src="/logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
         </div>
-        <div className="text-right">
-          <h2 className="text-2xl font-bold" style={{ color: colors.brandPink }}>RECEIPT</h2>
-          <p className="text-sm font-semibold mt-1" style={{ color: colors.grayText }}>Date: {new Date(sale.date).toLocaleDateString()}</p>
-          <p className="text-xs" style={{ color: colors.grayLightText }}>Order ID: #{sale._id.slice(-6).toUpperCase()}</p>
+        <h1 style={{ margin: '0 0 8px 0', fontSize: '26px', fontWeight: 900, letterSpacing: '-1px', fontStyle: 'italic', textTransform: 'uppercase' }}>
+          Derin<span style={{ color: colors.brandPink }}>Strands</span>
+        </h1>
+        <p style={{ margin: 0, fontSize: '10px', color: colors.slate, letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 700 }}>
+          {tagline}
+        </p>
+      </div>
+
+      {/* Dashed Divider */}
+      <div style={{ 
+        height: '1px', width: '100%', 
+        backgroundImage: `linear-gradient(to right, ${colors.border} 50%, transparent 50%)`, 
+        backgroundSize: '12px 1px', backgroundRepeat: 'repeat-x' 
+      }} />
+
+      {/* Customer & Order Info */}
+      <div style={{ padding: '32px', display: 'flex', justifyContent: 'space-between' }}>
+        <div>
+          <p style={{ margin: '0 0 4px', fontSize: '9px', fontWeight: 800, color: colors.slate, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Billed To</p>
+          <p style={{ margin: 0, fontSize: '16px', fontWeight: 900, color: colors.ink }}>{sale.buyerName}</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ margin: '0 0 4px', fontSize: '9px', fontWeight: 800, color: colors.slate, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Date</p>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.ink }}>
+            {new Date(sale.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </p>
         </div>
       </div>
 
-      <div className="mb-8 relative z-10">
-        <h3 className="text-sm uppercase tracking-wider font-bold mb-1" style={{ color: colors.grayLightText }}>Billed To</h3>
-        <p className="text-lg font-bold" style={{ color: colors.brandBlack }}>{sale.buyerName}</p>
-      </div>
+      {/* Dashed Divider */}
+      <div style={{ 
+        height: '1px', width: '100%', 
+        backgroundImage: `linear-gradient(to right, ${colors.border} 50%, transparent 50%)`, 
+        backgroundSize: '12px 1px', backgroundRepeat: 'repeat-x' 
+      }} />
 
-      <table className="w-full mb-8 text-left border-collapse relative z-10">
-        <thead>
-          <tr className="text-sm uppercase tracking-wider" style={{ backgroundColor: '#F9FAFB', color: '#374151' }}>
-            <th className="py-3 px-4 font-semibold">Item Description</th>
-            <th className="py-3 px-4 font-semibold text-center">Qty</th>
-            <th className="py-3 px-4 font-semibold text-right">Price</th>
-            <th className="py-3 px-4 font-semibold text-right">Amount</th>
-          </tr>
-        </thead>
-        <tbody style={{ color: colors.brandBlack }}>
+      {/* Items Section */}
+      <div style={{ padding: '32px' }}>
+        <p style={{ margin: '0 0 20px', fontSize: '9px', fontWeight: 800, color: colors.slate, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Order Details</p>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {sale.items.map((item, index) => (
-             <tr key={index} style={{ borderBottom: `1px solid ${colors.grayBorder}` }}>
-               <td className="py-4 px-4 font-medium">{item.name}</td>
-               <td className="py-4 px-4 text-center">{item.quantity}</td>
-               <td className="py-4 px-4 text-right">₦{item.price.toLocaleString()}</td>
-               <td className="py-4 px-4 text-right font-bold">₦{(item.price * item.quantity).toLocaleString()}</td>
-             </tr>
+            <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ paddingRight: '16px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 800, color: colors.ink }}>{item.name}</p>
+                <p style={{ margin: 0, fontSize: '12px', fontWeight: 600, color: colors.slate }}>
+                  {item.quantity} × ₦{item.price.toLocaleString()}
+                </p>
+              </div>
+              <p style={{ margin: 0, fontSize: '14px', fontWeight: 900, color: colors.ink }}>
+                ₦{(item.price * item.quantity).toLocaleString()}
+              </p>
+            </div>
           ))}
-        </tbody>
-      </table>
-
-      <div className="flex justify-end pt-4 relative z-10">
-        <div className="w-64">
-           <div className="flex justify-between items-center py-2 text-sm" style={{ color: colors.grayText }}>
-             <span>Subtotal</span>
-             <span>₦{sale.totalPrice.toLocaleString()}</span>
-           </div>
-           <div className="flex justify-between items-center py-4 mt-2" style={{ borderTop: `2px solid ${colors.brandPink}` }}>
-             <span className="text-lg font-bold uppercase" style={{ color: colors.brandBlack }}>Total Paid</span>
-             <span className="text-2xl font-black" style={{ color: colors.brandPink }}>₦{sale.totalPrice.toLocaleString()}</span>
-           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-10 left-10 right-10 text-center text-sm border-t pt-6" style={{ color: colors.grayText, borderTopColor: colors.grayBorder }}>
-        <p>Thank you for choosing DerinStrands!</p>
-        <p className="text-xs mt-1">For inquiries, contact derinstrands@gmail.com</p>
+      {/* Thick Solid Divider */}
+      <div style={{ height: '2px', backgroundColor: colors.ink, width: 'calc(100% - 64px)', margin: '0 auto' }} />
+
+      {/* Total Section */}
+      <div style={{ padding: '24px 32px 32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: 900, color: colors.ink, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Total {isPaid ? 'Paid' : 'Due'}
+          </p>
+          <p style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: colors.brandPink, letterSpacing: '-1px' }}>
+            ₦{sale.totalPrice.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Status Badge */}
+        <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{
+            padding: '8px 24px', borderRadius: '100px', 
+            backgroundColor: isPaid ? '#DCFCE7' : '#FFEDD5',
+            color: isPaid ? '#15803D' : '#C2410C',
+            fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em',
+            display: 'flex', alignItems: 'center', gap: '8px'
+          }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
+            {isPaid ? 'Payment Successful' : 'Payment Pending'}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ 
+        padding: '32px', backgroundColor: colors.background, 
+        textAlign: 'center', borderTop: `1px solid ${colors.border}`
+      }}>
+        {/* Fake Barcode Effect */}
+        <div style={{ 
+          height: '40px', width: '200px', margin: '0 auto 24px',
+          backgroundImage: `repeating-linear-gradient(to right, ${colors.ink}, ${colors.ink} 2px, transparent 2px, transparent 6px, ${colors.ink} 6px, ${colors.ink} 10px, transparent 10px, transparent 12px)`,
+          opacity: 0.2
+        }} />
+        
+        <p style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 900, color: colors.ink }}>
+          Thank you for choosing DerinStrands! 💗
+        </p>
+        <p style={{ margin: '0 0 16px', fontSize: '11px', fontWeight: 700, color: colors.slate }}>
+          IG: @derinstrands • derinstrands@gmail.com
+        </p>
+        <p style={{ margin: 0, fontSize: '9px', fontWeight: 800, color: colors.slate, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+          Ref: {sale._id.slice(-8).toUpperCase()}
+        </p>
       </div>
 
     </div>
   );
 });
 
+Receipt.displayName = 'Receipt';
 export default Receipt;

@@ -1,5 +1,8 @@
-import React from 'react';
-import { MdEdit, MdReceipt, MdDelete, MdShare } from 'react-icons/md';
+import React, { useState, useEffect } from 'react';
+import { MdEdit, MdReceipt, MdDelete, MdWhatsapp, MdShoppingBag } from 'react-icons/md';
+import { motion } from 'framer-motion';
+import StatusBadge from './StatusBadge';
+import Pagination from './Pagination';
 import type { ISale } from '../types';
 
 interface RecordsTableProps {
@@ -8,98 +11,113 @@ interface RecordsTableProps {
   onDelete: (id: string, buyerName: string) => void;
   onShowReceipt: (sale: ISale) => void;
   onCustomerClick: (name: string) => void;
+  onNewEntry?: () => void;
 }
 
-const RecordsTable: React.FC<RecordsTableProps> = ({ sales, onEdit, onDelete, onShowReceipt, onCustomerClick }) => {
+const RecordsTable: React.FC<RecordsTableProps> = ({
+  sales, onEdit, onDelete, onShowReceipt, onCustomerClick, onNewEntry
+}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sales]);
+
+  const totalPages = Math.ceil(sales.length / itemsPerPage);
+  const currentSales = sales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleWhatsAppShare = (sale: ISale) => {
-    const message = `Hello ${sale.buyerName}, thank you for your order at DerinStrands!\n\nOrder ID: #${sale._id.slice(-6).toUpperCase()}\nItems: ${sale.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nWe appreciate your business!`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const message = `Hello ${sale.buyerName}, thank you for your order at DerinStrands! ✨\n\nOrder ID: #${sale._id.slice(-6).toUpperCase()}\nTotal: ₦${sale.totalPrice.toLocaleString()}\nPayment: ${sale.paymentStatus.toUpperCase()}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  const StatusPill = ({ status }: { status: string }) => {
-    const successTypes = ['paid', 'delivered'];
-    const isSuccess = successTypes.includes(status.toLowerCase());
+  if (sales.length === 0) {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-        isSuccess ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-      }`}>
-        {status}
-      </span>
+      <div className="py-24 text-center glass-panel">
+        <p className="text-gray-400 font-bold mb-4">No sales records found.</p>
+        {onNewEntry && (
+          <button onClick={onNewEntry} className="modern-button-primary !bg-brand-pink hover:!bg-brand-black">
+            Add First Sale
+          </button>
+        )}
+      </div>
     );
-  };
+  }
 
   return (
-    <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-50">
-          <thead className="bg-gray-50/50">
-            <tr>
-              <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-              <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Buyer & Items</th>
-              <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
-              <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Payment</th>
-              <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Delivery</th>
-              <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50 bg-white">
-            {sales.map((sale) => (
-              <tr key={sale._id} className="hover:bg-gray-50/50 transition-colors group">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
-                  {new Date(sale.date).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4">
-                  <button 
+    <div>
+      <div className="flex justify-end mb-6">
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {currentSales.map((sale, index) => (
+          <motion.div
+            key={sale._id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="glass-card p-6 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <button
                     onClick={() => onCustomerClick(sale.buyerName)}
-                    className="text-sm font-bold text-brand-black hover:text-brand-pink transition-colors text-left"
+                    className="text-lg font-black text-brand-black hover:text-brand-pink transition-colors text-left truncate max-w-[150px] sm:max-w-[180px]"
                   >
                     {sale.buyerName}
                   </button>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase group-hover:text-brand-pink/60 transition-colors">
-                    {sale.items.map(i => i.name).join(', ')}
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                    {new Date(sale.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-black text-brand-pink">₦{sale.totalPrice.toLocaleString()}</p>
+                  <p className="text-[10px] text-gray-400 font-mono mt-1">#{sale._id.slice(-6).toUpperCase()}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-6">
+                {sale.items.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-100">
+                    <div className="flex items-center space-x-2 text-brand-black font-semibold truncate">
+                      <MdShoppingBag className="text-gray-400 shrink-0" />
+                      <span className="truncate">{item.name}</span>
+                    </div>
+                    <span className="text-brand-pink font-black shrink-0">×{item.quantity}</span>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-black font-black">
-                  ₦{sale.totalPrice.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <StatusPill status={sale.paymentStatus} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <StatusPill status={sale.deliveryStatus} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right space-x-1">
-                  <button 
-                    onClick={() => onEdit(sale)}
-                    className="p-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-all font-black text-lg" title="Edit"
-                  >
-                    <MdEdit />
-                  </button>
-                  <button 
-                    onClick={() => onShowReceipt(sale)}
-                    className="p-2 rounded-lg text-brand-pink hover:bg-brand-pink/5 transition-all font-black text-lg" title="View & Download Receipt"
-                  >
-                    <MdReceipt />
-                  </button>
-                  <button 
-                    onClick={() => handleWhatsAppShare(sale)}
-                    className="p-2 rounded-lg text-green-600 hover:bg-green-50 transition-all font-black text-lg" title="Share Status on WhatsApp"
-                  >
-                    <MdShare />
-                  </button>
-                  <button 
-                    onClick={() => onDelete(sale._id, sale.buyerName)}
-                    className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-all font-black text-lg" title="Delete"
-                  >
-                    <MdDelete />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                 <StatusBadge status={sale.paymentStatus} />
+                 <StatusBadge status={sale.deliveryStatus} />
+              </div>
+
+              <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
+                <button onClick={() => onEdit(sale)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-brand-black hover:bg-gray-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
+                  <MdEdit size={16} /> Edit
+                </button>
+                <button onClick={() => onShowReceipt(sale)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-brand-pink hover:bg-pink-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
+                  <MdReceipt size={16} /> Receipt
+                </button>
+                <button onClick={() => handleWhatsAppShare(sale)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
+                  <MdWhatsapp size={16} /> Share
+                </button>
+                <button onClick={() => onDelete(sale._id, sale.buyerName)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
+                  <MdDelete size={16} /> Trash
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      
+      <div className="mt-8">
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </div>
   );

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
+import BottomNav from '../components/BottomNav';
 import SummaryCards from '../components/SummaryCards';
-import FilterSection from '../components/FilterSection';
 import RecordsTable from '../components/RecordsTable';
 import SalesEntryForm from '../components/SalesEntryForm';
 import ConfirmModal from '../components/ConfirmModal';
 import ReceiptModal from '../components/ReceiptModal';
 import CustomerSidebar from '../components/CustomerSidebar';
-import { SummarySkeleton, TableSkeleton } from '../components/Skeletons';
+import FloatingActionButton from '../components/FloatingActionButton';
+import { SearchModal, FilterModal } from '../components/SearchFilterModals';
 import { getSales, createSale, updateSale, deleteSale } from '../services/api';
 import type { ISale, ISalePayload } from '../types';
 import { toast } from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const Dashboard: React.FC = () => {
   const [allSales, setAllSales] = useState<ISale[]>([]);
@@ -21,6 +23,8 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Modal States
   const [isEntryFormOpen, setIsEntryFormOpen] = useState(false);
@@ -141,42 +145,94 @@ const Dashboard: React.FC = () => {
     setIsCustomerSidebarOpen(true);
   };
 
+  const activeFilterCount = (statusFilter !== 'All' ? 1 : 0) + (dateFilter ? 1 : 0);
+
   return (
-    <div className="min-h-screen pb-20 animate-fade-in text-brand-black">
-      <Header onNewEntry={openNewEntry} />
+    <div className="min-h-screen pb-24 md:pb-8">
+      <Header 
+        showSearch={true} 
+        showFilter={true} 
+        onSearchClick={() => setIsSearchOpen(true)}
+        onFilterClick={() => setIsFilterOpen(true)}
+        onAddClick={openNewEntry}
+        activeFilterCount={activeFilterCount}
+      />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
-        {isLoading ? (
-          <SummarySkeleton />
-        ) : (
-          <SummaryCards sales={allSales} />
-        )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-8 animate-fade-in">
         
-        <div className="space-y-6">
-          <FilterSection 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-          />
+        <div className="space-y-1 sm:space-y-2 mb-2 px-2 sm:px-0">
+           <h2 className="text-2xl sm:text-3xl font-black text-brand-black tracking-tight">Welcome, Derin! ✨</h2>
+           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Here is your business overview today.</p>
+        </div>
+
+        <div className="space-y-8">
           {isLoading ? (
-            <TableSkeleton />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-[120px] skeleton rounded-[2rem]"></div>
+              ))}
+            </motion.div>
           ) : (
-            <RecordsTable 
-              sales={filteredSales} 
-              onEdit={(sale) => {
-                setActiveSaleToEdit(sale);
-                setIsEntryFormOpen(true);
-              }}
-              onDelete={handleDeleteClick}
-              onShowReceipt={handleShowReceipt}
-              onCustomerClick={handleCustomerClick}
-            />
+            <SummaryCards sales={allSales} />
           )}
+          
+          <div className="space-y-6 pt-2">
+            
+            {/* Display active search/filters inline to remind user why list might be short */}
+            {(searchQuery || statusFilter !== 'All' || dateFilter) && (
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Filters:</span>
+                {searchQuery && <span className="px-3 py-1 bg-gray-50 text-brand-black text-[10px] font-black uppercase rounded-full border border-gray-100">"{searchQuery}"</span>}
+                {statusFilter !== 'All' && <span className="px-3 py-1 bg-gray-50 text-brand-black text-[10px] font-black uppercase rounded-full border border-gray-100">{statusFilter}</span>}
+                {dateFilter && <span className="px-3 py-1 bg-gray-50 text-brand-black text-[10px] font-black uppercase rounded-full border border-gray-100">{dateFilter}</span>}
+                <button onClick={() => { setSearchQuery(''); setStatusFilter('All'); setDateFilter(''); }} className="text-[10px] font-black text-brand-pink uppercase tracking-widest ml-2 hover:underline">Clear All</button>
+              </div>
+            )}
+
+            {isLoading ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-[300px] skeleton rounded-2xl"></div>
+                ))}
+              </motion.div>
+            ) : (
+              <RecordsTable 
+                sales={filteredSales} 
+                onEdit={(sale) => {
+                  setActiveSaleToEdit(sale);
+                  setIsEntryFormOpen(true);
+                }}
+                onDelete={handleDeleteClick}
+                onShowReceipt={handleShowReceipt}
+                onCustomerClick={handleCustomerClick}
+                onNewEntry={openNewEntry}
+              />
+            )}
+          </div>
         </div>
       </main>
+
+      <FloatingActionButton onClick={openNewEntry} />
+      <BottomNav />
+
+      {/* Modals */}
+      <SearchModal 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        placeholder="Search buyers or items..."
+      />
+
+      <FilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
+        statusOptions={['All', 'Paid', 'Pending']}
+      />
 
       <SalesEntryForm 
         isOpen={isEntryFormOpen}

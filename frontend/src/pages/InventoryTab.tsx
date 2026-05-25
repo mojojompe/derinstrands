@@ -1,256 +1,273 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MdAdd, MdEdit, MdDelete, MdInventory2, MdClose, MdWarning } from 'react-icons/md';
+import BottomNav from '../components/BottomNav';
+import FloatingActionButton from '../components/FloatingActionButton';
+import Pagination from '../components/Pagination';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/api';
 import type { IProduct, IProductPayload } from '../types';
 import { toast } from 'react-hot-toast';
-
-const emptyForm: IProductPayload = { name: '', price: 0, quantity: 0 };
+import { MdEdit, MdDelete } from 'react-icons/md';
+import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmModal from '../components/ConfirmModal';
+import { SearchModal } from '../components/SearchFilterModals';
 
 const InventoryTab: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
-  const [form, setForm] = useState<IProductPayload>(emptyForm);
-  const [restockId, setRestockId] = useState<string | null>(null);
-  const [restockQty, setRestockQty] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<IProduct>>({});
+  
+  const [isAdding, setIsAdding] = useState(false);
+  const [addForm, setAddForm] = useState<IProductPayload>({ name: '', price: 0, quantity: 0, category: '' });
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string, name: string } | null>(null);
 
   useEffect(() => { fetchProducts(); }, []);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredProducts(products);
+    } else {
+      const q = searchQuery.toLowerCase();
+      setFilteredProducts(products.filter(p => p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q))));
+    }
+  }, [products, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredProducts]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
       const data = await getProducts();
       setProducts(data);
-    } catch {
+    } catch (err) {
       toast.error('Failed to load inventory');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const openAdd = () => { setEditingProduct(null); setForm(emptyForm); setIsFormOpen(true); };
-  const openEdit = (p: IProduct) => { setEditingProduct(p); setForm({ name: p.name, price: p.price, quantity: p.quantity }); setIsFormOpen(true); };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || form.price < 0 || form.quantity < 0) {
-      toast.error('Please fill all fields correctly');
-      return;
-    }
-    const id = toast.loading(editingProduct ? 'Updating product...' : 'Adding product...');
+    if (!addForm.name || addForm.price <= 0 || addForm.quantity < 0) return toast.error('Invalid fields');
+    const loadingToast = toast.loading('Adding product...');
     try {
-      if (editingProduct) {
-        await updateProduct(editingProduct._id, form);
-        toast.success('Product updated!', { id });
-      } else {
-        await createProduct(form);
-        toast.success('Product added to inventory!', { id });
-      }
-      setIsFormOpen(false);
+      await createProduct(addForm);
+      toast.success('Product added!', { id: loadingToast });
+      setIsAdding(false);
+      setAddForm({ name: '', price: 0, quantity: 0, category: '' });
       fetchProducts();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Error saving product', { id });
+    } catch (err) {
+      toast.error('Failed to add product', { id: loadingToast });
     }
   };
 
-  const handleDelete = async (p: IProduct) => {
-    if (!confirm(`Delete "${p.name}" from inventory?`)) return;
-    const id = toast.loading('Deleting...');
+  const handleEditSave = async (id: string) => {
+    if (!editForm.name || editForm.price! <= 0 || editForm.quantity! < 0) return toast.error('Invalid fields');
+    const loadingToast = toast.loading('Saving changes...');
     try {
-      await deleteProduct(p._id);
-      toast.success('Product deleted', { id });
+      await updateProduct(id, editForm);
+      toast.success('Product updated', { id: loadingToast });
+      setEditingId(null);
       fetchProducts();
-    } catch {
-      toast.error('Delete failed', { id });
+    } catch (err) {
+      toast.error('Failed to update product', { id: loadingToast });
     }
   };
 
-  const handleRestock = async (p: IProduct) => {
-    if (restockQty <= 0) { toast.error('Enter a quantity greater than 0'); return; }
-    const id = toast.loading('Restocking...');
+  const handleDeleteClick = (id: string, name: string) => {
+    setProductToDelete({ id, name });
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+    const loadingToast = toast.loading('Deleting product...');
     try {
-      await updateProduct(p._id, { quantity: p.quantity + restockQty });
-      toast.success(`Added ${restockQty} units to ${p.name}`, { id });
-      setRestockId(null);
-      setRestockQty(0);
+      await deleteProduct(productToDelete.id);
+      toast.success('Product deleted', { id: loadingToast });
+      setDeleteConfirmOpen(false);
       fetchProducts();
-    } catch {
-      toast.error('Restock failed', { id });
+    } catch (err) {
+      toast.error('Delete failed', { id: loadingToast });
     }
   };
 
-  const totalItems = products.length;
+  const totalValue = products.reduce((acc, p) => acc + (p.price * p.quantity), 0);
   const outOfStock = products.filter(p => p.quantity === 0).length;
   const lowStock = products.filter(p => p.quantity > 0 && p.quantity <= 5).length;
 
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
-    <div className="min-h-screen pb-20 animate-fade-in">
-      <Header />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-10">
-        {/* Page Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-brand-black tracking-tighter italic uppercase">Inventory</h1>
-            <p className="text-sm text-gray-400 font-medium mt-1">Manage your product stock levels</p>
+    <div className="min-h-screen pb-24 md:pb-8">
+      <Header 
+        showSearch={true} 
+        onSearchClick={() => setIsSearchOpen(true)}
+        onAddClick={() => setIsAdding(true)}
+      />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-8 animate-fade-in">
+        
+        {/* Hide huge headers, prioritize stats */}
+        <div className="flex gap-4 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
+          <div className="bg-gray-50 px-6 py-4 rounded-[1.5rem] shrink-0 border border-gray-100 flex-1 min-w-[140px]">
+             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Value</p>
+             <p className="text-xl sm:text-2xl font-black text-brand-black mt-1 tracking-tight">₦{totalValue.toLocaleString()}</p>
           </div>
-          <button onClick={openAdd} className="modern-button-primary flex items-center space-x-2 self-start">
-            <MdAdd size={20} /> <span>Add Product</span>
-          </button>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: 'Total Products', value: totalItems, color: 'text-brand-black', bg: 'bg-gray-50' },
-            { label: 'Low Stock (≤5)', value: lowStock, color: 'text-orange-500', bg: 'bg-orange-50' },
-            { label: 'Out of Stock', value: outOfStock, color: 'text-red-500', bg: 'bg-red-50' },
-          ].map(s => (
-            <div key={s.label} className={`${s.bg} p-5 rounded-[2rem] border border-gray-100`}>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
-              <p className={`text-3xl font-black mt-1 ${s.color}`}>{s.value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Products Table */}
-        <div className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-50">
-              <thead className="bg-gray-50/50">
-                <tr>
-                  {['Product Name', 'Default Price (₦)', 'Qty in Stock', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {isLoading ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <tr key={i}>
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <td key={j} className="px-6 py-4"><div className="h-4 bg-gray-100 rounded animate-pulse w-24" /></td>
-                      ))}
-                    </tr>
-                  ))
-                ) : products.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
-                      <MdInventory2 size={48} className="text-gray-200 mx-auto mb-3" />
-                      <p className="text-sm font-bold text-gray-400">No products yet. Add your first product!</p>
-                    </td>
-                  </tr>
-                ) : (
-                  products.map(p => (
-                    <tr key={p._id} className="hover:bg-gray-50/50 transition-colors group">
-                      <td className="px-6 py-4 font-bold text-brand-black text-sm">{p.name}</td>
-                      <td className="px-6 py-4 text-sm font-black text-brand-black">₦{p.price.toLocaleString()}</td>
-                      <td className="px-6 py-4">
-                        {restockId === p._id ? (
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="number" min="1" value={restockQty}
-                              onChange={e => setRestockQty(Number(e.target.value))}
-                              className="modern-input !py-1 !text-xs w-20"
-                              placeholder="Qty"
-                              autoFocus
-                            />
-                            <button onClick={() => handleRestock(p)} className="text-[10px] font-black bg-brand-pink text-white px-3 py-1.5 rounded-xl hover:bg-brand-black transition-all">ADD</button>
-                            <button onClick={() => setRestockId(null)} className="text-gray-400"><MdClose size={18} /></button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-3">
-                            <span className="text-sm font-black text-brand-black">{p.quantity}</span>
-                            <button
-                              onClick={() => { setRestockId(p._id); setRestockQty(0); }}
-                              className="text-[9px] font-black text-brand-pink border border-brand-pink/30 px-2 py-1 rounded-lg hover:bg-brand-pink hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                            >
-                              + RESTOCK
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {p.quantity === 0 ? (
-                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-100 text-red-600 uppercase">
-                            <MdWarning size={12} /><span>Out of Stock</span>
-                          </span>
-                        ) : p.quantity <= 5 ? (
-                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-100 text-orange-600 uppercase">
-                            <MdWarning size={12} /><span>Low Stock</span>
-                          </span>
-                        ) : (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-green-100 text-green-700 uppercase">In Stock</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-1">
-                        <button onClick={() => openEdit(p)} className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 transition-all"><MdEdit /></button>
-                        <button onClick={() => handleDelete(p)} className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-all"><MdDelete /></button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="bg-orange-50 px-6 py-4 rounded-[1.5rem] shrink-0 border border-orange-100 min-w-[120px]">
+             <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Low Stock</p>
+             <p className="text-xl sm:text-2xl font-black text-orange-600 mt-1 tracking-tight">{lowStock} items</p>
+          </div>
+          <div className="bg-red-50 px-6 py-4 rounded-[1.5rem] shrink-0 border border-red-100 min-w-[120px]">
+             <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">Out of Stock</p>
+             <p className="text-xl sm:text-2xl font-black text-red-600 mt-1 tracking-tight">{outOfStock} items</p>
           </div>
         </div>
-      </main>
 
-      {/* Add / Edit Product Modal */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-brand-black/40 backdrop-blur-md" onClick={() => setIsFormOpen(false)} />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 border border-gray-100">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-xl font-black text-brand-black italic uppercase tracking-tighter">
-                  {editingProduct ? 'Edit Product' : 'New Product'}
-                </h2>
-                <button onClick={() => setIsFormOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <MdClose className="text-xl text-gray-400" />
-                </button>
-              </div>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Product Name</label>
-                  <input
-                    required type="text" value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="modern-input" placeholder="e.g. Knotless Braids"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Default Price (₦)</label>
-                    <input
-                      required type="number" min="0" value={form.price || ''}
-                      onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-                      className="modern-input" placeholder="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Quantity in Stock</label>
-                    <input
-                      required type="number" min="0" value={form.quantity || ''}
-                      onChange={e => setForm(f => ({ ...f, quantity: Number(e.target.value) }))}
-                      className="modern-input" placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div className="flex space-x-3 pt-2">
-                  <button type="button" onClick={() => setIsFormOpen(false)} className="modern-button-secondary flex-1">Cancel</button>
-                  <button type="submit" className="modern-button-primary flex-1 !bg-brand-pink hover:!bg-brand-black">
-                    {editingProduct ? 'Save Changes' : 'Add Product'}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+        {searchQuery && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Search Result:</span>
+            <span className="px-3 py-1 bg-gray-50 text-brand-black text-[10px] font-black uppercase rounded-full border border-gray-100">"{searchQuery}"</span>
+            <button onClick={() => setSearchQuery('')} className="text-[10px] font-black text-brand-pink uppercase tracking-widest ml-2 hover:underline">Clear</button>
           </div>
         )}
-      </AnimatePresence>
+
+        {/* Inventory Cards */}
+        {isLoading ? (
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+             {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-48 skeleton rounded-[2rem]" />)}
+           </div>
+        ) : filteredProducts.length === 0 && !isAdding ? (
+          <div className="py-24 text-center glass-panel">
+            <p className="text-gray-400 font-bold mb-4">No products found.</p>
+          </div>
+        ) : (
+          <div>
+            <div className="flex justify-end mb-6">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <AnimatePresence>
+                {isAdding && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="glass-card p-6 flex flex-col justify-between border-brand-pink border-2"
+                  >
+                    <form onSubmit={handleAddSubmit} className="space-y-4">
+                      <input autoFocus type="text" placeholder="Product Name" required className="modern-input !py-2 !px-3 text-sm" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} />
+                      <input type="text" placeholder="Category" className="modern-input !py-2 !px-3 text-sm" value={addForm.category} onChange={e => setAddForm({...addForm, category: e.target.value})} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <input type="number" min="0" placeholder="Price" required className="modern-input !py-2 !px-3 text-sm" value={addForm.price || ''} onChange={e => setAddForm({...addForm, price: Number(e.target.value)})} />
+                        <input type="number" min="0" placeholder="Quantity" required className="modern-input !py-2 !px-3 text-sm" value={addForm.quantity || ''} onChange={e => setAddForm({...addForm, quantity: Number(e.target.value)})} />
+                      </div>
+                      <div className="flex gap-2 pt-2 border-t border-gray-100">
+                         <button type="submit" className="flex-1 py-2 bg-brand-pink text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-black transition-colors">Save</button>
+                         <button type="button" onClick={() => setIsAdding(false)} className="flex-1 py-2 bg-gray-100 text-gray-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 transition-colors">Cancel</button>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {currentProducts.map((p) => {
+                const isEditing = editingId === p._id;
+                const stockStatus = p.quantity === 0 ? 'Out of stock' : p.quantity <= 5 ? 'Low stock' : 'In stock';
+                const stockColor = p.quantity === 0 ? 'bg-red-50 text-red-600 border-red-100' : p.quantity <= 5 ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-green-50 text-green-700 border-green-100';
+
+                if (isEditing) {
+                  return (
+                    <div key={p._id} className="glass-card p-6 flex flex-col justify-between border-brand-black border-2">
+                      <div className="space-y-4">
+                        <input type="text" required className="modern-input !py-2 !px-3 text-sm" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
+                        <input type="text" className="modern-input !py-2 !px-3 text-sm" value={editForm.category} onChange={e => setEditForm({...editForm, category: e.target.value})} />
+                        <div className="grid grid-cols-2 gap-4">
+                          <input type="number" min="0" required className="modern-input !py-2 !px-3 text-sm" value={editForm.price} onChange={e => setEditForm({...editForm, price: Number(e.target.value)})} />
+                          <input type="number" min="0" required className="modern-input !py-2 !px-3 text-sm" value={editForm.quantity} onChange={e => setEditForm({...editForm, quantity: Number(e.target.value)})} />
+                        </div>
+                        <div className="flex gap-2 pt-2 border-t border-gray-100">
+                           <button onClick={() => handleEditSave(p._id)} className="flex-1 py-2 bg-brand-black text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-pink transition-colors">Update</button>
+                           <button onClick={() => setEditingId(null)} className="flex-1 py-2 bg-gray-100 text-gray-500 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-gray-200 transition-colors">Cancel</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={p._id} className="glass-card p-6 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-lg font-black text-brand-black leading-tight max-w-[180px] truncate">{p.name}</h3>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{p.category || 'Uncategorized'}</p>
+                        </div>
+                        <div className={`px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${stockColor}`}>
+                          {stockStatus}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-[1.5rem]">
+                         <div>
+                           <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Price</p>
+                           <p className="text-xl font-black text-brand-pink mt-1 tracking-tight">₦{p.price.toLocaleString()}</p>
+                         </div>
+                         <div>
+                           <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Qty</p>
+                           <p className="text-xl font-black text-brand-black mt-1 tracking-tight">{p.quantity}</p>
+                         </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
+                      <button onClick={() => { setEditingId(p._id); setEditForm(p); }} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-brand-black hover:bg-gray-50 rounded-xl transition-colors flex items-center justify-center gap-1">
+                        <MdEdit size={16} /> Edit
+                      </button>
+                      <button onClick={() => handleDeleteClick(p._id, p.name)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-1">
+                        <MdDelete size={16} /> Trash
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-8">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+          </div>
+        )}
+      </main>
+
+      <FloatingActionButton onClick={() => setIsAdding(true)} label="New Product" />
+      <BottomNav />
+
+      <SearchModal 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        placeholder="Search inventory..."
+      />
+
+      <ConfirmModal 
+        isOpen={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${productToDelete?.name}"?`}
+      />
     </div>
   );
 };

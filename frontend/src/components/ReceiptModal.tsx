@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { MdClose, MdFileDownload, MdImage, MdShare } from 'react-icons/md';
+import { MdClose, MdPictureAsPdf, MdImage } from 'react-icons/md';
+import { MdShare } from 'react-icons/md';
 import type { ISale } from '../types';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import jsPDF from 'jspdf';
 import Receipt from './Receipt';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ReceiptModalProps {
   isOpen: boolean;
@@ -17,63 +19,34 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, sale }) =>
 
   if (!isOpen || !sale) return null;
 
-  const performCapture = async (): Promise<HTMLCanvasElement | null> => {
-    if (!captureAreaRef.current) {
-       alert("Capture system error: Node not found");
-       return null;
-    }
-    
+  const performCapture = async (): Promise<string | null> => {
+    if (!captureAreaRef.current) return null;
     try {
-      // Robust image pre-loading
-      const images = captureAreaRef.current.querySelectorAll('img');
-      const promises = Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-          img.onload = resolve;
-          img.onerror = resolve;
-        });
-      });
-      await Promise.all(promises);
-
-      // We wait a tiny bit to ensure layout is settled
-      await new Promise(r => setTimeout(r, 100));
-
-      const canvas = await html2canvas(captureAreaRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
+      const dataUrl = await htmlToImage.toPng(captureAreaRef.current, {
         backgroundColor: '#ffffff',
-        logging: false,
-        width: 600,
-        height: 800,
-        x: 0,
-        y: 0,
-        onclone: (clonedDoc) => {
-           // Ensure the captured element is visible in the cloned DOM
-           const el = clonedDoc.querySelector('[data-capture-container="true"]') as HTMLElement;
-           if (el) {
-             el.style.opacity = '1';
-             el.style.visibility = 'visible';
-             el.style.position = 'static';
-           }
+        pixelRatio: 2,
+        style: {
+          opacity: '1',
+          visibility: 'visible'
         }
       });
-      return canvas;
+      return dataUrl;
     } catch (err) {
-      alert(`Capture engine failed: ${err instanceof Error ? err.message : String(err)}`);
+      alert(`Capture failed: ${err instanceof Error ? err.message : String(err)}`);
       return null;
     }
   };
 
   const handleDownloadPDF = async () => {
     setIsGenerating(true);
-    const canvas = await performCapture();
-    if (canvas) {
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const dataUrl = await performCapture();
+    if (dataUrl) {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const width = pdf.internal.pageSize.getWidth();
-      const height = (canvas.height * width) / canvas.width;
-      pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+      
+      // Calculate height dynamically based on standard receipt ratio, or just a generic ratio
+      const height = (800 * width) / 420; 
+      pdf.addImage(dataUrl, 'PNG', 0, 0, width, height);
       pdf.save(`Receipt_${sale.buyerName.replace(/\s+/g, '_')}.pdf`);
     }
     setIsGenerating(false);
@@ -81,145 +54,131 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, sale }) =>
 
   const handleDownloadImage = async () => {
     setIsGenerating(true);
-    const canvas = await performCapture();
-    if (canvas) {
-      const imgData = canvas.toDataURL('image/png');
+    const dataUrl = await performCapture();
+    if (dataUrl) {
       const link = document.createElement('a');
       link.download = `Receipt_${sale.buyerName.replace(/\s+/g, '_')}.png`;
-      link.href = imgData;
+      link.href = dataUrl;
       link.click();
     }
     setIsGenerating(false);
   };
 
   const handleShare = async () => {
-    const shareText = `Hello ${sale.buyerName}, here is your receipt from DerinStrands.\n\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nThank you for choosing us!`;
-    
+    const shareText = `Hello ${sale.buyerName}, here is your receipt from DerinStrands.\n\nTotal: ₦${sale.totalPrice.toLocaleString()}\nStatus: ${sale.paymentStatus.toUpperCase()}\n\nThank you for choosing us! 💗`;
     setIsGenerating(true);
-    const canvas = await performCapture();
-    
-    if (!canvas) {
-      setIsGenerating(false);
-      return;
-    }
+    const dataUrl = await performCapture();
+    if (!dataUrl) { setIsGenerating(false); return; }
 
     try {
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          alert("Image processing failed. Sending text summary only.");
-          const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-          window.open(url, '_blank');
-          setIsGenerating(false);
-          return;
-        }
-
-        const file = new File([blob], `Receipt_${sale._id.slice(-6)}.png`, { type: 'image/png' });
-
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'DerinStrands Receipt',
-              text: shareText
-            });
-          } catch (e) {
-            console.warn("Navigator share failed", e);
-            // Revert to image download + msg instructions
-            handleDownloadImage();
-            setTimeout(() => {
-                alert("Sharing failed. Receipt has been downloaded. Please attach it manually in WhatsApp.");
-                const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-                window.open(url, '_blank');
-            }, 500);
-          }
-        } else {
-          // Manual fallback: Download + Whatsapp
-          handleDownloadImage();
-          setTimeout(() => {
-              alert("Modern sharing not supported on this browser. Receipt downloaded - please attach it to your WhatsApp message.");
-              const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-              window.open(url, '_blank');
-          }, 500);
-        }
-        setIsGenerating(false);
-      }, 'image/png');
-    } catch (err) {
-      setIsGenerating(false);
-      const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-      window.open(url, '_blank');
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `Receipt_${sale._id.slice(-6)}.png`, { type: 'image/png' });
+      
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'DerinStrands Receipt', text: shareText }); }
+        catch { handleDownloadImage(); window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank'); }
+      } else {
+        handleDownloadImage();
+        setTimeout(() => window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank'), 500);
+      }
+    } catch (e) {
+      handleDownloadImage();
     }
+    setIsGenerating(false);
   };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-brand-black/50 backdrop-blur-md" onClick={onClose} />
-      
-      {/* Visual Modal */}
-      <div className="relative bg-white w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[90dvh] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in border border-white/20">
-        
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        className="absolute inset-0 bg-brand-black/40 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+      {/* Modal Shell */}
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+        className="relative bg-white w-full h-full sm:w-[80vw] sm:max-w-5xl sm:h-[85vh] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-gray-100"
+      >
         {/* Toolbar */}
-        <div className="p-4 sm:p-6 bg-white border-b border-gray-100 flex justify-between items-center shrink-0">
+        <div className="px-6 py-5 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-sm sm:text-xl font-black text-brand-black italic uppercase italic tracking-tight">Receipt Preview</h2>
+            <h2 className="text-base font-black text-brand-black uppercase tracking-widest">Receipt Preview</h2>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+              {sale.buyerName} · #{sale._id.slice(-6).toUpperCase()}
+            </p>
           </div>
 
-          <div className="flex items-center space-x-1 sm:space-x-3">
-             <button onClick={handleDownloadPDF} disabled={isGenerating} className="icon-btn-gold flex items-center space-x-1 sm:space-x-2 bg-brand-black text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-[10px] sm:text-xs font-black hover:bg-brand-pink transition-all">
-               <MdFileDownload size={18} /> <span>PDF</span>
-             </button>
-             <button onClick={handleDownloadImage} disabled={isGenerating} className="flex items-center space-x-1 sm:space-x-2 bg-gray-100 text-brand-black px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-[10px] sm:text-xs font-black hover:bg-white transition-all">
-               <MdImage size={18} /> <span>IMG</span>
-             </button>
-             <button onClick={handleShare} disabled={isGenerating} className="flex items-center space-x-1 sm:space-x-2 bg-green-500 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-[10px] sm:text-xs font-black hover:bg-green-600 transition-all">
-               <MdShare size={18} /> <span>SHARE</span>
-             </button>
-             <div className="h-6 w-[1px] bg-gray-200 mx-1 sm:mx-2" />
-             <button onClick={onClose} className="p-2 text-gray-400 hover:text-brand-black transition-colors">
-               <MdClose size={24} />
-             </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDownloadPDF} disabled={isGenerating}
+              className="flex items-center gap-2 px-4 py-2.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand-pink transition-all disabled:opacity-50"
+            >
+              <MdPictureAsPdf className="text-lg" />
+              <span className="hidden sm:inline">Save PDF</span>
+            </button>
+            <button
+              onClick={handleDownloadImage} disabled={isGenerating}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white text-brand-black text-[10px] font-black uppercase tracking-widest rounded-xl border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-50"
+            >
+              <MdImage className="text-lg" />
+              <span className="hidden sm:inline">Save Image</span>
+            </button>
+            <button
+              onClick={handleShare} disabled={isGenerating}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#25D366] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#1ebe5d] transition-all disabled:opacity-50"
+            >
+              <MdShare className="text-lg" />
+              <span className="hidden sm:inline">Send</span>
+            </button>
+
+            <div className="w-px h-6 bg-gray-200 mx-2" />
+
+            <button onClick={onClose} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors">
+              <MdClose className="text-xl" />
+            </button>
           </div>
         </div>
 
-        {/* Scrollable Preview Area (Visible to user) */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-12 flex justify-center bg-gray-50/50 custom-scrollbar shadow-inner">
-           <div className="scale-[0.55] xs:scale-[0.75] sm:scale-100 origin-top h-fit pb-10">
-              <div className="shadow-2xl ring-1 ring-black/5">
-                 <Receipt sale={sale} />
-              </div>
-           </div>
+        {/* Preview Area */}
+        <div className="flex-1 overflow-y-auto p-6 sm:p-10 flex justify-center items-start bg-gray-50 custom-scrollbar">
+          <div className="w-full max-w-[420px] origin-top h-fit mx-auto">
+            <div className="shadow-2xl ring-1 ring-black/5 rounded-sm overflow-hidden">
+              <Receipt sale={sale} />
+            </div>
+          </div>
         </div>
 
-        {isGenerating && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-[210] flex flex-col items-center justify-center">
-             <div className="w-12 h-12 border-4 border-brand-pink border-t-transparent rounded-full animate-spin mb-4" />
-             <p className="text-[10px] font-black uppercase tracking-widest text-brand-black animate-pulse">Generating Receipt...</p>
-          </div>
-        )}
-      </div>
+        {/* Generating overlay */}
+        <AnimatePresence>
+          {isGenerating && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-white/80 backdrop-blur-sm z-[210] flex flex-col items-center justify-center gap-4"
+            >
+              <div className="w-10 h-10 border-4 border-brand-pink border-t-transparent rounded-full animate-spin" />
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest animate-pulse">
+                Preparing Receipt...
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-      {/* 
-          ULTRA ROBUST CAPTURE NODE
-          Placed on screen but with near-zero opacity. 
-          Absolute positioning avoids shifting the main layout.
-      */}
-      <div 
-        style={{ 
-          position: 'absolute', 
-          top: '0', 
-          left: '0', 
-          zIndex: -1, 
-          pointerEvents: 'none',
-          opacity: 0.01, // Near-zero but NOT 0 (some browsers skip rendering opacity 0)
-          width: '600px',
-          height: '800px',
-          overflow: 'hidden',
-          backgroundColor: '#fff'
+      <div
+        style={{
+          position: 'absolute', top: 0, left: 0, zIndex: -1,
+          pointerEvents: 'none', opacity: 0.01,
+          width: '420px', overflow: 'hidden', backgroundColor: '#fff'
         }}
         data-capture-container="true"
       >
-        <div ref={captureAreaRef} style={{ width: '600px', height: '800px', background: '#fff' }}>
-           <Receipt sale={sale} />
+        <div ref={captureAreaRef} style={{ width: '420px', background: '#fff' }}>
+          <Receipt sale={sale} />
         </div>
       </div>
     </div>
