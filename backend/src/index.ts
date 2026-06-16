@@ -17,6 +17,33 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serverless-friendly database connection
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) {
+    return;
+  }
+  try {
+    const db = await mongoose.connect(MONGO_URI);
+    isConnected = db.connections[0].readyState === 1;
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+    throw error;
+  }
+};
+
+// Middleware to ensure database connection before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Database connection failed' });
+  }
+});
+
 app.use('/api/sales', salesRoutes);
 app.use('/api/products', productRoutes);
 
@@ -25,20 +52,13 @@ app.get('/', (req, res) => {
   res.send('DerinStrands API is running');
 });
 
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((error) => {
-    console.error('Error connecting to MongoDB', error);
-  });
-
 // Export the app for Vercel
 export default app;
 
 // Listen only if not in production (Vercel)
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
+    await connectDB();
     console.log(`Server running on port ${PORT}`);
   });
 }
