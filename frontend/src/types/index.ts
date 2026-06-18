@@ -1,5 +1,6 @@
 export interface IItem {
   _id?: string;
+  productId: string;
   name: string;
   price: number;
   quantity: number;

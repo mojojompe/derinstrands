@@ -10,7 +10,7 @@ const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale }, ref) =
   const tagline = "...Good Hair, Good Mood...";
 
   const colors = {
-    brandPink: '#FF1493',
+    brandPink: '#C2185B',
     ink: '#09090B',
     slate: '#71717A',
     surface: '#FFFFFF',

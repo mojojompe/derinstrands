@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-pink: #FF1493;
-  --color-brand-pink-light: #FF69B4;
+  --color-brand-pink: #C2185B;
+  --color-brand-pink-light: #D81B60;
   --color-brand-black: #1A1A1A;
 }
 

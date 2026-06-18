@@ -104,10 +104,10 @@ const RecordsTable: React.FC<RecordsTableProps> = ({
                 <button onClick={() => onShowReceipt(sale)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-brand-pink hover:bg-pink-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
                   <MdReceipt size={16} /> Receipt
                 </button>
-                <button onClick={() => handleWhatsAppShare(sale)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
+                <button onClick={() => handleWhatsAppShare(sale)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-green-800 hover:bg-green-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
                   <MdWhatsapp size={16} /> Share
                 </button>
-                <button onClick={() => onDelete(sale._id, sale.buyerName)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
+                <button onClick={() => onDelete(sale._id, sale.buyerName)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors flex flex-col items-center justify-center gap-1">
                   <MdDelete size={16} /> Trash
                 </button>
               </div>

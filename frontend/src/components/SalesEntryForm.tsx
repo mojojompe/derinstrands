@@ -13,13 +13,14 @@ interface SalesEntryFormProps {
 }
 
 interface ItemState {
+  productId: string;
   name: string;
   price: number;
   quantity: number;
   paymentStatus: 'pending' | 'paid';
 }
 
-const defaultItem: ItemState = { name: '', price: 0, quantity: 1, paymentStatus: 'pending' };
+const defaultItem: ItemState = { productId: '', name: '', price: 0, quantity: 1, paymentStatus: 'pending' };
 
 const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [buyerName, setBuyerName] = useState('');
@@ -51,7 +52,7 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
       setDate(new Date(initialData.date).toISOString().split('T')[0]);
       setDeliveryStatus(initialData.deliveryStatus || 'pending');
       const mapped: ItemState[] = initialData.items.map((item: any) => ({
-        name: item.name, price: item.price, quantity: item.quantity,
+        productId: item.productId || '', name: item.name, price: item.price, quantity: item.quantity,
         paymentStatus: item.paymentStatus || 'pending'
       }));
       const loadedItems = mapped.length ? mapped : [{ ...defaultItem }];
@@ -87,7 +88,7 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
   const selectProduct = (index: number, product: IProduct) => {
     setItems(prev => {
       const next = [...prev];
-      next[index] = { ...next[index], name: product.name, price: product.price };
+      next[index] = { ...next[index], productId: product._id, name: product.name, price: product.price };
       return next;
     });
     setSearchTerms(prev => { const n = [...prev]; n[index] = product.name; return n; });
@@ -194,16 +195,16 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
                                 <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Item {index + 1}</span>
                                 {stockRemaining !== null && (
                                   <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${
-                                    stockRemaining === 0 ? 'bg-red-100 text-red-600' :
-                                    stockRemaining <= 5   ? 'bg-orange-100 text-orange-600' :
-                                    'bg-green-100 text-green-700'
+                                    stockRemaining === 0 ? 'bg-red-100 text-red-800' :
+                                    stockRemaining <= 5   ? 'bg-orange-100 text-orange-800' :
+                                    'bg-green-100 text-green-800'
                                   }`}>
                                     {stockRemaining === 0 ? 'Out of stock' : `${stockRemaining} in stock`}
                                   </span>
                                 )}
                               </div>
                               {items.length > 1 && (
-                                <button type="button" onClick={() => handleRemoveItem(index)} className="p-1.5 hover:bg-red-100 text-red-500 rounded-lg transition-colors">
+                                <button type="button" onClick={() => handleRemoveItem(index)} className="p-1.5 hover:bg-red-100 text-red-700 rounded-lg transition-colors">
                                   <MdDelete size={16} />
                                 </button>
                               )}
@@ -235,7 +236,7 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
                                         <span className="font-bold text-brand-black text-sm">{p.name}</span>
                                         <div className="flex items-center gap-3">
                                           <span className="text-gray-400 text-xs font-bold">₦{p.price.toLocaleString()}</span>
-                                          <span className={`text-[10px] font-black ${p.quantity === 0 ? 'text-red-500' : p.quantity <= 5 ? 'text-orange-500' : 'text-green-500'}`}>
+                                          <span className={`text-[10px] font-black ${p.quantity === 0 ? 'text-red-700' : p.quantity <= 5 ? 'text-orange-700' : 'text-green-700'}`}>
                                             {p.quantity === 0 ? 'OUT' : `×${p.quantity}`}
                                           </span>
                                         </div>
@@ -267,7 +268,7 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
                                     <button
                                       key={s} type="button" onClick={() => updateItem(index, 'paymentStatus', s)}
                                       className={`flex-1 h-full rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                        item.paymentStatus === s ? (s === 'paid' ? 'bg-green-500 text-white' : 'bg-brand-black text-white') : 'text-gray-400 hover:bg-gray-50'
+                                        item.paymentStatus === s ? (s === 'paid' ? 'bg-green-700 text-white' : 'bg-brand-black text-white') : 'text-gray-400 hover:bg-gray-50'
                                       }`}
                                     >
                                       {s}
@@ -297,7 +298,7 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
                         key={s} type="button" onClick={() => setDeliveryStatus(s)}
                         className={`flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 ${
                           deliveryStatus === s
-                            ? (s === 'delivered' ? 'border-green-500 bg-green-50 text-green-600' : 'border-orange-500 bg-orange-50 text-orange-600')
+                            ? (s === 'delivered' ? 'border-green-700 bg-green-50 text-green-800' : 'border-orange-700 bg-orange-50 text-orange-800')
                             : 'border-transparent bg-gray-50 text-gray-400 hover:bg-gray-100'
                         }`}
                       >
@@ -319,7 +320,7 @@ const SalesEntryForm: React.FC<SalesEntryFormProps> = ({ isOpen, onClose, onSubm
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Payment Status</p>
-                  <p className={`text-sm font-black uppercase tracking-widest mt-1 ${allPaid ? 'text-green-500' : 'text-orange-500'}`}>
+                  <p className={`text-sm font-black uppercase tracking-widest mt-1 ${allPaid ? 'text-green-700' : 'text-orange-700'}`}>
                     {allPaid ? 'Fully Paid' : 'Pending'}
                   </p>
                 </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { MdDashboard, MdInventory2, MdBarChart, MdCampaign } from 'react-icons/md';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
   { to: '/dashboard', label: 'Overview', icon: MdDashboard },
@@ -15,36 +15,43 @@ const BottomNav: React.FC = () => {
   const path = location.pathname;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-40 md:hidden pb-safe">
-      <div className="glass-panel !border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.08)] bg-white/95 backdrop-blur-xl rounded-[2rem] px-2">
-        <div className="flex items-center justify-around h-16 px-2">
+    <div className="fixed bottom-6 left-0 right-0 z-40 md:hidden flex justify-center pointer-events-none pb-safe">
+      <div className="pointer-events-auto bg-white/80 backdrop-blur-2xl rounded-full px-3 py-2 shadow-[0_20px_40px_rgba(0,0,0,0.25)] border border-gray-100/50 flex items-center gap-2">
         {navLinks.map(link => {
           const isActive = path === link.to;
           return (
             <Link
               key={link.to}
               to={link.to}
-              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-                isActive ? 'text-brand-pink' : 'text-gray-400 hover:text-brand-black'
+              className={`relative flex items-center justify-center h-12 rounded-full transition-all duration-300 overflow-hidden ${
+                isActive ? 'px-5 text-brand-black' : 'w-12 text-gray-400 hover:text-brand-black hover:bg-gray-50'
               }`}
             >
-              <div className={`relative flex items-center justify-center rounded-full transition-all duration-300 ${isActive ? 'w-11 h-11 -translate-y-1.5' : 'w-8 h-8'}`}>
-                {isActive && (
-                  <motion.div
-                    layoutId="bottomNavIndicator"
-                    className="absolute inset-0 bg-pink-100 border-2 border-brand-pink rounded-full shadow-md"
-                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
-                  />
-                )}
-                <link.icon className={`relative z-10 transition-all duration-300 ${isActive ? 'text-2xl text-brand-pink' : 'text-xl'}`} />
+              {isActive && (
+                <motion.div
+                  layoutId="bottomNavIndicator"
+                  className="absolute inset-0 bg-gray-200 rounded-full shadow-sm"
+                  transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                />
+              )}
+              <div className="relative z-10 flex items-center gap-2">
+                <link.icon className="text-xl shrink-0" />
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.span 
+                      initial={{ opacity: 0, width: 0, marginLeft: 0 }}
+                      animate={{ opacity: 1, width: 'auto', marginLeft: 4 }}
+                      exit={{ opacity: 0, width: 0, marginLeft: 0 }}
+                      className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap overflow-hidden"
+                    >
+                      {link.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </div>
-              <span className={`text-[9px] font-black tracking-widest uppercase ${isActive ? 'text-brand-black -translate-y-2' : ''}`}>
-                {link.label}
-              </span>
             </Link>
           );
         })}
-      </div>
       </div>
     </div>
   );

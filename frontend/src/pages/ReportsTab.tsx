@@ -45,8 +45,8 @@ const ReportsTab: React.FC = () => {
     const paid = sales.filter(s => s.paymentStatus === 'paid').length;
     const pending = sales.filter(s => s.paymentStatus === 'pending').length;
     return [
-      { name: 'Paid', value: paid, color: '#10B981' },
-      { name: 'Pending', value: pending, color: '#F59E0B' }
+      { name: 'Paid', value: paid, color: '#047857' },
+      { name: 'Pending', value: pending, color: '#B45309' }
     ];
   }, [sales]);
 
@@ -54,8 +54,8 @@ const ReportsTab: React.FC = () => {
     const delivered = sales.filter(s => s.deliveryStatus === 'delivered').length;
     const pending = sales.filter(s => s.deliveryStatus === 'pending').length;
     return [
-      { name: 'Delivered', value: delivered, color: '#10B981' },
-      { name: 'Pending', value: pending, color: '#F59E0B' }
+      { name: 'Delivered', value: delivered, color: '#047857' },
+      { name: 'Pending', value: pending, color: '#B45309' }
     ];
   }, [sales]);
 
@@ -105,9 +105,9 @@ const ReportsTab: React.FC = () => {
           {[
              { label: 'Total Revenue', value: `₦${stats.revenue.toLocaleString()}`, color: 'text-brand-pink', bg: 'bg-pink-50' },
              { label: 'Total Orders', value: stats.orders, color: 'text-brand-black', bg: 'bg-gray-50' },
-             { label: 'Average Order', value: `₦${Math.round(stats.avgOrder).toLocaleString()}`, color: 'text-green-600', bg: 'bg-green-50' },
-             { label: 'Items Sold', value: stats.totalItemsSold, color: 'text-purple-600', bg: 'bg-purple-50' },
-             { label: 'Unique Customers', value: stats.uniqueCustomers, color: 'text-blue-600', bg: 'bg-blue-50' }
+             { label: 'Average Order', value: `₦${Math.round(stats.avgOrder).toLocaleString()}`, color: 'text-green-800', bg: 'bg-green-50' },
+             { label: 'Items Sold', value: stats.totalItemsSold, color: 'text-purple-800', bg: 'bg-purple-50' },
+             { label: 'Unique Customers', value: stats.uniqueCustomers, color: 'text-blue-800', bg: 'bg-blue-50' }
           ].map(s => (
              <div key={s.label} className={`${s.bg} p-5 rounded-[2rem] border border-white shadow-sm flex flex-col justify-center`}>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
@@ -126,8 +126,8 @@ const ReportsTab: React.FC = () => {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#FF1493" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#FF1493" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#C2185B" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#C2185B" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
@@ -138,7 +138,7 @@ const ReportsTab: React.FC = () => {
                       itemStyle={{ color: '#1A1A1A', fontWeight: 'bold' }}
                       formatter={(val: any) => [`₦${Number(val).toLocaleString()}`, 'Revenue']}
                     />
-                    <Area type="monotone" dataKey="revenue" stroke="#FF1493" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                    <Area type="monotone" dataKey="revenue" stroke="#C2185B" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (

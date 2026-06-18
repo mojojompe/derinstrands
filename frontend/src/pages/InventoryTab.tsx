@@ -10,6 +10,7 @@ import { MdEdit, MdDelete } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../components/ConfirmModal';
 import { SearchModal } from '../components/SearchFilterModals';
+import { TableSkeleton } from '../components/Skeletons';
 
 const InventoryTab: React.FC = () => {
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -126,12 +127,12 @@ const InventoryTab: React.FC = () => {
              <p className="text-xl sm:text-2xl font-black text-brand-black mt-1 tracking-tight">₦{totalValue.toLocaleString()}</p>
           </div>
           <div className="bg-orange-50 px-6 py-4 rounded-[1.5rem] shrink-0 border border-orange-100 min-w-[120px]">
-             <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Low Stock</p>
-             <p className="text-xl sm:text-2xl font-black text-orange-600 mt-1 tracking-tight">{lowStock} items</p>
+             <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Low Stock</p>
+             <p className="text-xl sm:text-2xl font-black text-orange-800 mt-1 tracking-tight">{lowStock} items</p>
           </div>
           <div className="bg-red-50 px-6 py-4 rounded-[1.5rem] shrink-0 border border-red-100 min-w-[120px]">
-             <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">Out of Stock</p>
-             <p className="text-xl sm:text-2xl font-black text-red-600 mt-1 tracking-tight">{outOfStock} items</p>
+             <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">Out of Stock</p>
+             <p className="text-xl sm:text-2xl font-black text-red-800 mt-1 tracking-tight">{outOfStock} items</p>
           </div>
         </div>
 
@@ -145,9 +146,7 @@ const InventoryTab: React.FC = () => {
 
         {/* Inventory Cards */}
         {isLoading ? (
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-             {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-48 skeleton rounded-[2rem]" />)}
-           </div>
+           <TableSkeleton />
         ) : filteredProducts.length === 0 && !isAdding ? (
           <div className="py-24 text-center glass-panel">
             <p className="text-gray-400 font-bold mb-4">No products found.</p>
@@ -185,7 +184,7 @@ const InventoryTab: React.FC = () => {
               {currentProducts.map((p) => {
                 const isEditing = editingId === p._id;
                 const stockStatus = p.quantity === 0 ? 'Out of stock' : p.quantity <= 5 ? 'Low stock' : 'In stock';
-                const stockColor = p.quantity === 0 ? 'bg-red-50 text-red-600 border-red-100' : p.quantity <= 5 ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-green-50 text-green-700 border-green-100';
+                const stockColor = p.quantity === 0 ? 'bg-red-50 text-red-800 border-red-100' : p.quantity <= 5 ? 'bg-orange-50 text-orange-800 border-orange-100' : 'bg-green-50 text-green-800 border-green-100';
 
                 if (isEditing) {
                   return (
@@ -235,7 +234,7 @@ const InventoryTab: React.FC = () => {
                       <button onClick={() => { setEditingId(p._id); setEditForm(p); }} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-brand-black hover:bg-gray-50 rounded-xl transition-colors flex items-center justify-center gap-1">
                         <MdEdit size={16} /> Edit
                       </button>
-                      <button onClick={() => handleDeleteClick(p._id, p.name)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-1">
+                      <button onClick={() => handleDeleteClick(p._id, p.name)} className="flex-1 py-2.5 text-[10px] uppercase tracking-wider font-black text-gray-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-1">
                         <MdDelete size={16} /> Trash
                       </button>
                     </div>

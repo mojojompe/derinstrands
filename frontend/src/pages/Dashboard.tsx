@@ -12,7 +12,7 @@ import { SearchModal, FilterModal } from '../components/SearchFilterModals';
 import { getSales, createSale, updateSale, deleteSale } from '../services/api';
 import type { ISale, ISalePayload } from '../types';
 import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { SummarySkeleton, TableSkeleton } from '../components/Skeletons';
 
 const Dashboard: React.FC = () => {
   const [allSales, setAllSales] = useState<ISale[]>([]);
@@ -167,11 +167,7 @@ const Dashboard: React.FC = () => {
 
         <div className="space-y-8">
           {isLoading ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-[120px] skeleton rounded-[2rem]"></div>
-              ))}
-            </motion.div>
+            <SummarySkeleton />
           ) : (
             <SummaryCards sales={allSales} />
           )}
@@ -190,11 +186,7 @@ const Dashboard: React.FC = () => {
             )}
 
             {isLoading ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-[300px] skeleton rounded-2xl"></div>
-                ))}
-              </motion.div>
+              <TableSkeleton />
             ) : (
               <RecordsTable 
                 sales={filteredSales} 

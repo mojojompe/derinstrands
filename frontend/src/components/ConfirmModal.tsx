@@ -28,7 +28,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
             className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl p-8 text-center border border-gray-100"
           >
             <div className="w-16 h-16 bg-red-50 rounded-2xl mx-auto flex items-center justify-center mb-6">
-              <MdDeleteForever className="text-3xl text-red-500" />
+              <MdDeleteForever className="text-3xl text-red-700" />
             </div>
 
             <h2 className="text-xl font-black text-brand-black tracking-tighter italic uppercase mb-3">{title}</h2>
@@ -43,7 +43,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
               </button>
               <button
                 onClick={onConfirm}
-                className="flex-1 py-3 bg-red-500 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all hover:bg-red-600 active:scale-[0.98] shadow-lg shadow-red-500/20"
+                className="flex-1 py-3 bg-red-700 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all hover:bg-red-800 active:scale-[0.98] shadow-lg shadow-red-500/20"
               >
                 Delete
               </button>

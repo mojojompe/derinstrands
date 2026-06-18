@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <div className="sticky top-0 z-40 w-full pt-4 px-4 sm:px-6 lg:px-8">
-      <header className="max-w-7xl mx-auto bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-gray-100/50 px-4 sm:px-6 lg:px-8">
+      <header className="max-w-7xl mx-auto bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-[0_15px_40px_rgba(0,0,0,0.1)] border border-gray-100/50 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-18">
 
           <div className="flex items-center gap-8 lg:gap-12">
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({
                     to={link.to}
                     className={`relative flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-200 ${
                       isActive 
-                        ? 'bg-brand-black text-white shadow-md' 
+                        ? 'bg-gray-200 text-brand-black shadow-sm' 
                         : 'text-gray-400 hover:text-brand-black hover:bg-gray-50'
                     }`}
                   >
