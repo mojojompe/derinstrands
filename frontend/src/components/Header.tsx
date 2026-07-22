@@ -1,6 +1,9 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { MdSearch, MdTune, MdAdd, MdDashboard, MdInventory2, MdBarChart, MdCampaign } from 'react-icons/md';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MdSearch, MdTune, MdAdd, MdDashboard, MdInventory2, MdBarChart, MdCampaign, MdLogout } from 'react-icons/md';
+import { useAuth } from '../context/AuthContext';
+import ConfirmModal from './ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
   onSearchClick?: () => void;
@@ -24,6 +27,17 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const location = useLocation();
   const path = location.pathname;
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    setIsLogoutModalOpen(false);
+    toast.success('Logged out successfully');
+    navigate('/login');
+  };
 
   return (
     <div className="sticky top-0 z-40 w-full pt-4 px-4 sm:px-6 lg:px-8">
@@ -88,10 +102,28 @@ const Header: React.FC<HeaderProps> = ({
                 <span>Add New</span>
               </button>
             )}
+
+            <button 
+              onClick={() => setIsLogoutModalOpen(true)} 
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:text-brand-pink hover:bg-brand-pink/10 transition-colors ml-2"
+              title="Logout"
+            >
+              <MdLogout className="text-xl sm:text-2xl" />
+            </button>
           </div>
 
         </div>
       </header>
+
+      <ConfirmModal 
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of the admin portal?"
+        confirmText="Logout"
+        isLogout={true}
+      />
     </div>
   );
 };

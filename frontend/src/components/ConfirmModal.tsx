@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdDeleteForever } from 'react-icons/md';
+import { MdDeleteForever, MdLogout } from 'react-icons/md';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -8,9 +8,13 @@ interface ConfirmModalProps {
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmText?: string;
+  isLogout?: boolean;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm, title, message }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({ 
+  isOpen, onClose, onConfirm, title, message, confirmText = 'Delete', isLogout = false 
+}) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -27,8 +31,12 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
             exit={{ scale: 0.9, opacity: 0 }}
             className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl p-8 text-center border border-gray-100"
           >
-            <div className="w-16 h-16 bg-red-50 rounded-2xl mx-auto flex items-center justify-center mb-6">
-              <MdDeleteForever className="text-3xl text-red-700" />
+            <div className={`w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-6 ${isLogout ? 'bg-brand-pink/10' : 'bg-red-50'}`}>
+              {isLogout ? (
+                <MdLogout className="text-3xl text-brand-pink" />
+              ) : (
+                <MdDeleteForever className="text-3xl text-red-700" />
+              )}
             </div>
 
             <h2 className="text-xl font-black text-brand-black tracking-tighter italic uppercase mb-3">{title}</h2>
@@ -43,9 +51,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
               </button>
               <button
                 onClick={onConfirm}
-                className="flex-1 py-3 bg-red-700 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all hover:bg-red-800 active:scale-[0.98] shadow-lg shadow-red-500/20"
+                className={`flex-1 py-3 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all active:scale-[0.98] ${
+                  isLogout 
+                    ? 'bg-brand-pink hover:bg-brand-pink/90 shadow-brand-pink/20' 
+                    : 'bg-red-700 hover:bg-red-800 shadow-red-500/20'
+                } shadow-lg`}
               >
-                Delete
+                {confirmText}
               </button>
             </div>
           </motion.div>

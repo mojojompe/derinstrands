@@ -4,6 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import salesRoutes from './routes/salesRoutes';
 import productRoutes from './routes/productRoutes';
+import authRoutes from './routes/authRoutes';
+import { requireAuth } from './middleware/authMiddleware';
 
 dotenv.config();
 
@@ -44,8 +46,12 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.use('/api/sales', salesRoutes);
-app.use('/api/products', productRoutes);
+// Auth route is un-protected
+app.use('/api/auth', authRoutes);
+
+// Protect the following routes
+app.use('/api/sales', requireAuth, salesRoutes);
+app.use('/api/products', requireAuth, productRoutes);
 
 // Health check
 app.get('/', (req, res) => {
