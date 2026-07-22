@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FiLock, FiArrowRight } from 'react-icons/fi';
+import { FiLock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { loginUser } from '../services/api';
@@ -36,85 +35,66 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background Split */}
-      <div className="absolute top-0 left-0 w-full h-1/2 bg-brand-pink z-0" />
-      <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gray-50 z-0" />
-
-      {/* Decorative Blobs */}
-      <motion.div 
-        animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute top-10 right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl z-0"
-      />
-      <motion.div 
-        animate={{ scale: [1, 1.2, 1], rotate: [0, -90, 0] }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute top-40 left-10 w-96 h-96 bg-black/5 rounded-full blur-3xl z-0"
-      />
-
-      {/* Login Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
-        className="relative z-10 w-full max-w-md mx-4"
-      >
-        <div className="bg-white p-10 rounded-[2rem] shadow-2xl border border-gray-100">
-          
-          {/* Logo / Header */}
-          <div className="text-center mb-10">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', bounce: 0.5 }}
-              className="w-20 h-20 bg-brand-pink/10 rounded-full flex items-center justify-center mx-auto mb-6"
-            >
-              <FiLock className="w-8 h-8 text-brand-pink" />
-            </motion.div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">DerinStrands</h1>
-            <p className="text-gray-500 font-medium">Admin Portal Login</p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter Password"
-                  className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl outline-none transition-all duration-300 focus:border-brand-pink/30 focus:bg-white focus:shadow-[0_0_0_4px_rgba(255,105,180,0.1)] text-gray-800 font-medium placeholder-gray-400"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 bg-brand-pink text-white rounded-2xl font-bold text-lg shadow-lg shadow-brand-pink/30 hover:shadow-brand-pink/50 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Access Dashboard</span>
-                  <FiArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </motion.button>
-          </form>
-
+    <div className="min-h-screen bg-brand-pink flex flex-col font-sans">
+      
+      {/* Top Section */}
+      <div className="flex-1 flex flex-col items-center justify-center p-8">
+        <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg mb-4 border-4 border-white/20">
+          <img src="/logo.jpg" alt="DerinStrands Logo" className="w-full h-full object-cover" />
         </div>
+        <h1 className="text-white text-3xl font-black uppercase text-center leading-tight tracking-wider">
+          DERIN<br />STRANDS
+        </h1>
+      </div>
+
+      {/* Bottom Section (White Card) */}
+      <div className="bg-white rounded-t-[2.5rem] w-full px-6 py-10 flex flex-col items-center shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+        <h2 className="text-[22px] font-bold text-gray-900 mb-1">Welcome back</h2>
+        <p className="text-gray-400 text-sm mb-8 font-medium">Sign in to your account</p>
         
-        <p className="text-center text-gray-400 text-sm mt-8 font-medium">
-          Securely managed by the backend
-        </p>
-      </motion.div>
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
+          
+          <div>
+            <label className="block text-[11px] font-bold text-gray-400 mb-2 tracking-widest uppercase">
+              Password
+            </label>
+            <div className="relative flex items-center bg-[#f0f4f8] rounded-2xl px-4 py-3.5 focus-within:ring-2 focus-within:ring-brand-pink/50 transition-all">
+              <FiLock className="text-gray-400 mr-3 text-xl shrink-0" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-transparent w-full outline-none text-gray-800 font-bold tracking-widest placeholder-gray-400"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end">
+            <button 
+              type="button" 
+              className="text-[13px] font-semibold text-gray-400 hover:text-brand-pink transition-colors"
+              onClick={() => toast("Contact the super-admin to reset password.", { icon: '🔒' })}
+            >
+              Forgot Password?
+            </button>
+          </div>
+          
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#1a1a2e] hover:bg-black text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-gray-900/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center mt-2"
+          >
+            {isLoading ? (
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            ) : (
+              'Login'
+            )}
+          </button>
+        </form>
+      </div>
+
     </div>
   );
 };
