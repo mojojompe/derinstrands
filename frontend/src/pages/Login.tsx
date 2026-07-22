@@ -38,17 +38,17 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-brand-pink flex flex-col font-sans">
       
       {/* Top Section */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
+      <div className="h-[40vh] flex flex-col items-center justify-center p-8">
         <div className="w-24 h-24 rounded-full overflow-hidden shadow-lg mb-4 border-4 border-white/20">
           <img src="/logo.jpg" alt="DerinStrands Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-white text-3xl font-black uppercase text-center leading-tight tracking-wider">
-          DERIN<br />STRANDS
+          DERIN STRANDS
         </h1>
       </div>
 
       {/* Bottom Section (White Card) */}
-      <div className="bg-white rounded-t-[2.5rem] w-full px-6 py-10 flex flex-col items-center shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+      <div className="flex-1 bg-white rounded-t-[2.5rem] w-full px-6 pt-12 pb-10 flex flex-col items-center shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
         <h2 className="text-[22px] font-bold text-gray-900 mb-1">Welcome back</h2>
         <p className="text-gray-400 text-sm mb-8 font-medium">Sign in to your account</p>
         
