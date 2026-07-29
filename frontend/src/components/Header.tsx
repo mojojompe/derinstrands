@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { MdSearch, MdTune, MdAdd, MdDashboard, MdInventory2, MdBarChart, MdCampaign, MdLogout } from 'react-icons/md';
+import { MdSearch, MdTune, MdAdd, MdDashboard, MdInventory2, MdBarChart, MdCampaign, MdLogout, MdSettings } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
+import SettingsModal from './SettingsModal';
 import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
@@ -31,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({
   const { logout } = useAuth();
 
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -104,8 +106,16 @@ const Header: React.FC<HeaderProps> = ({
             )}
 
             <button 
+              onClick={() => setIsSettingsModalOpen(true)} 
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:text-brand-black hover:bg-gray-100 transition-colors ml-1 sm:ml-2"
+              title="Settings"
+            >
+              <MdSettings className="text-xl sm:text-2xl" />
+            </button>
+
+            <button 
               onClick={() => setIsLogoutModalOpen(true)} 
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:text-brand-pink hover:bg-brand-pink/10 transition-colors ml-2"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-500 hover:text-brand-pink hover:bg-brand-pink/10 transition-colors ml-1"
               title="Logout"
             >
               <MdLogout className="text-xl sm:text-2xl" />
@@ -123,6 +133,11 @@ const Header: React.FC<HeaderProps> = ({
         message="Are you sure you want to log out of the admin portal?"
         confirmText="Logout"
         isLogout={true}
+      />
+
+      <SettingsModal 
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
     </div>
   );

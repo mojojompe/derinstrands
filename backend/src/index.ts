@@ -6,6 +6,8 @@ import salesRoutes from './routes/salesRoutes';
 import productRoutes from './routes/productRoutes';
 import authRoutes from './routes/authRoutes';
 import { requireAuth } from './middleware/authMiddleware';
+import Admin from './models/Admin';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -30,6 +32,17 @@ const connectDB = async () => {
     const db = await mongoose.connect(MONGO_URI);
     isConnected = db.connections[0].readyState === 1;
     console.log('Connected to MongoDB');
+    
+    // Seed admin user if it doesn't exist
+    const adminCount = await Admin.countDocuments({ username: 'admin' });
+    if (adminCount === 0) {
+      console.log('Seeding initial admin user...');
+      const adminPassword = process.env.ADMIN_PASSWORD || 'derin_admin_123';
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(adminPassword, salt);
+      await Admin.create({ username: 'admin', password: hashedPassword });
+      console.log('Initial admin user seeded successfully.');
+    }
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
     throw error;

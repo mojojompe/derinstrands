@@ -18,10 +18,16 @@ const authInterceptor = (config: any) => {
 
 salesApi.interceptors.request.use(authInterceptor);
 productsApi.interceptors.request.use(authInterceptor);
+authApi.interceptors.request.use(authInterceptor);
 
 // --- Auth ---
 export const loginUser = async (password: string): Promise<{ token: string }> => {
   const response = await authApi.post('/login', { password });
+  return response.data;
+};
+
+export const changePassword = async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
+  const response = await authApi.post('/change-password', { currentPassword, newPassword });
   return response.data;
 };
 
