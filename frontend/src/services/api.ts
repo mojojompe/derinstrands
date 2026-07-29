@@ -16,9 +16,21 @@ const authInterceptor = (config: any) => {
   return config;
 };
 
+// Interceptor to handle expired tokens
+const responseErrorInterceptor = (error: any) => {
+  if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    window.dispatchEvent(new Event('auth:unauthorized'));
+  }
+  return Promise.reject(error);
+};
+
 salesApi.interceptors.request.use(authInterceptor);
 productsApi.interceptors.request.use(authInterceptor);
 authApi.interceptors.request.use(authInterceptor);
+
+salesApi.interceptors.response.use((response) => response, responseErrorInterceptor);
+productsApi.interceptors.response.use((response) => response, responseErrorInterceptor);
+authApi.interceptors.response.use((response) => response, responseErrorInterceptor);
 
 // --- Auth ---
 export const loginUser = async (password: string): Promise<{ token: string }> => {
